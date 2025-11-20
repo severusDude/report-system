@@ -26,15 +26,20 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  students    Student[]
+  attachments Attachment[]
 }
 
 model Student {
-  id    String @id @default(cuid())
-  name  String
-  email String @unique
+  id   String @id @default(cuid())
+  name String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  parent   User   @relation(fields: [parentId], references: [id])
+  parentId String
 
   reports Report[]
   works   Work[]
@@ -82,7 +87,6 @@ model Work {
   id          String  @id @default(cuid())
   title       String
   description String?
-  url         String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -92,4 +96,21 @@ model Work {
 
   subject   Subject? @relation(fields: [subjectId], references: [id])
   subjectId String?
+
+  attachments Attachment[]
+}
+
+model Attachment {
+  id       String @id @default(cuid())
+  filename String
+  url      String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  uploadedBy String
+  uploader   User   @relation(fields: [uploadedBy], references: [id])
+
+  work   Work?   @relation(fields: [workId], references: [id])
+  workId String?
 }
