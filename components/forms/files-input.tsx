@@ -17,6 +17,7 @@ function FileUploadField({
   fileType?: string[];
 }) {
   const [isDisabled, setIsDisabled] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   function handleFileAdded(fileList: FileList) {
@@ -56,6 +57,39 @@ function FileUploadField({
     }
   }
 
+  // Drag handlers
+  function handleDragEnter(event: React.DragEvent<HTMLDivElement>) {
+    if (isDisabled) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(true);
+  }
+
+  function handleDragOver(event: React.DragEvent<HTMLDivElement>) {
+    if (isDisabled) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(true);
+  }
+
+  function handleDragLeave(event: React.DragEvent<HTMLDivElement>) {
+    if (isDisabled) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(false);
+  }
+
+  function handleDrop(event: React.DragEvent<HTMLDivElement>) {
+    if (isDisabled) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(false);
+
+    if (event.dataTransfer.files) {
+      handleFileAdded(event.dataTransfer.files);
+    }
+  }
+
   return (
     <div
       className={cn(
@@ -64,6 +98,10 @@ function FileUploadField({
           ? "opacity-50 cursor-not-allowed"
           : "hover:border-primary cursor-pointer"
       )}
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
     >
       <input
         ref={inputRef}
