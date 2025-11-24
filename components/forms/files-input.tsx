@@ -3,10 +3,58 @@
 import { cn } from "@/lib/utils";
 import { Upload } from "lucide-react";
 import { useRef, useState } from "react";
+import { toast } from "sonner";
 
-function FileUploadField() {
+const fileTypes = [".jpg", ".png", ".pdf"];
+
+function FileUploadField({
+  files = [],
+  onChange = () => {},
+  fileType = fileTypes,
+}: {
+  files?: File[];
+  onChange?: (files: File[]) => void;
+  fileType?: string[];
+}) {
   const [isDisabled, setIsDisabled] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  function handleFileAdded(fileList: FileList) {
+    const newFiles = Array.from(fileList);
+
+    // check if the added files is acceptable
+    for (const file of newFiles) {
+      const extension = `.${file.name.split(".").pop()}`;
+      if (!fileType.includes(extension)) {
+        toast.error(`File type not supported: ${extension}`);
+        return;
+      }
+    }
+
+    const updatedFiles = [...files, ...newFiles];
+    onChange(updatedFiles);
+
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
+
+    if (newFiles.length > 1) {
+      toast.success(`Added ${newFiles.length} files`);
+    } else {
+      const latestFile = newFiles[newFiles.length - 1];
+      toast.success(`Added file: ${latestFile.name}`);
+    }
+
+    console.log("Current files:", updatedFiles);
+  }
+
+  function handleFileSelect(event: React.ChangeEvent<HTMLInputElement>) {
+    if (isDisabled) return;
+
+    if (event.target.files) {
+      handleFileAdded(event.target.files);
+    }
+  }
 
   return (
     <div
@@ -20,7 +68,10 @@ function FileUploadField() {
       <input
         ref={inputRef}
         type="file"
+        multiple
         disabled={isDisabled}
+        accept={fileType.join(",")}
+        onChange={handleFileSelect}
         className="absolute inset-0 w-full h-full opacity-0"
       />
       <Upload

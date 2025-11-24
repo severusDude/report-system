@@ -8,10 +8,6 @@ function FileUpload() {
         <h1 className="text-2xl font-bold mb-4">File Upload Page</h1>
         <p>This is the file upload page content.</p>
 
-        {/* <form>
-          <input type="file" />
-          <button type="submit">Upload</button>
-        </form> */}
         <FileUploadField />
       </div>
     </AuthenticatedLayout>
