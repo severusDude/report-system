@@ -1,8 +1,8 @@
-import AuthenticatedLayout from "@/components/authenticated-layout";
+import AuthenticatedLayout from "@/layouts/authenticated-layout";
 
 export default function Page() {
   return (
-    <AuthenticatedLayout>
+    <AuthenticatedLayout header="Dashboard">
       <h1>Dashboard</h1>
     </AuthenticatedLayout>
   );
