@@ -7,10 +7,13 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 
+import { ResponseData } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Attachment } from "@/types/attachment";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { createStudentWork } from "@/services/work-service";
 import FileUploadField from "@/components/forms/files-input";
 import {
   Field,
@@ -60,17 +63,27 @@ function CreateWorkForm() {
         body: formData,
       });
 
-      const result = await response.json();
+      const result = (await response.json()) as ResponseData<Attachment[]>;
 
       if (!response.ok) {
         throw new Error(result.message || "Upload failed");
       }
 
-      toast.success("Files uploaded successfully");
+      // Update database
+      const responseWork = await createStudentWork({
+        studentId: "student-1", // TODO: Get from session
+        title: data.title,
+        description: data.description,
+        attachments: result.data,
+      });
+
+      if (!responseWork.success) {
+        throw new Error(responseWork.message || "Failed to create work");
+      }
+
+      toast.success(responseWork.message || "Work created successfully");
       form.reset();
       form.setValue("files", []);
-
-      // TODO: Update database with the acquired file urls
     } catch (error) {
       console.error("Upload error: ", error);
 

@@ -1,7 +1,9 @@
-import { Attachment } from "@/types/attachment";
-import { NextResponse } from "next/server";
-import { v2 as cloudinary } from "cloudinary";
 import { file } from "zod";
+import { v2 as cloudinary } from "cloudinary";
+
+import { NextResponse } from "next/server";
+import { Attachment } from "@/types/attachment";
+import { ResponseData } from "@/types";
 
 // Cloudinary config
 cloudinary.config({
@@ -10,12 +12,6 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
   secure: true,
 });
-
-type ResponseData<T> = {
-  success: boolean;
-  message: string;
-  data: T;
-};
 
 type AttachmentResponse = ResponseData<Attachment[]>;
 
@@ -111,6 +107,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     const attachments = uploadResults.map((result: CloudUploadResult) => ({
       id: result.public_id,
+      uploadedBy: "", // TODO: Get current user
       // filename: result.original_filename || result.public_id,
       filename: file.name,
       url: result.secure_url,
