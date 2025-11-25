@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { Activity, useState } from "react";
 
 import { z } from "zod";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 
 import { Input } from "@/components/ui/input";
@@ -68,6 +69,8 @@ function CreateWorkForm() {
       toast.success("Files uploaded successfully");
       form.reset();
       form.setValue("files", []);
+
+      // TODO: Update database with the acquired file urls
     } catch (error) {
       console.error("Upload error: ", error);
 
@@ -153,6 +156,9 @@ function CreateWorkForm() {
           Reset
         </Button>
         <Button type="submit" disabled={isSubmitting}>
+          <Activity mode={isSubmitting ? "visible" : "hidden"}>
+            <Loader2 className="mr-2 animate-spin" />
+          </Activity>
           {isSubmitting ? "Uploading..." : "Submit Work"}
         </Button>
       </div>
