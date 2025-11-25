@@ -1,17 +1,14 @@
 import WorkUploadForm from "@/components/forms/work-upload-form";
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
 
-function FileUpload() {
+function Page() {
   return (
-    <AuthenticatedLayout header="File Upload">
-      <div className="p-4">
-        <h1 className="text-2xl font-bold mb-4">File Upload Page</h1>
-        <p>This is the file upload page content.</p>
-      </div>
+    <AuthenticatedLayout header="Add student work">
+      <h1 className="text-2xl font-bold mb-4">File Upload Page</h1>
 
       <WorkUploadForm />
     </AuthenticatedLayout>
   );
 }
 
-export default FileUpload;
+export default Page;

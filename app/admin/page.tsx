@@ -3,7 +3,9 @@ import AuthenticatedLayout from "@/layouts/authenticated-layout";
 export default function Page() {
   return (
     <AuthenticatedLayout header="Dashboard">
-      <h1>Dashboard</h1>
+      <div className="p-4">
+        <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+      </div>
     </AuthenticatedLayout>
   );
 }

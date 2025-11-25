@@ -24,12 +24,16 @@ const data = {
   },
   navMain: [
     {
-      title: "Test Navigations",
+      title: "School",
       url: "#",
       items: [
         {
-          title: "File Upload",
-          url: "/tests/file-upload",
+          title: "Students",
+          url: "/admin/students",
+        },
+        {
+          title: "Subjects",
+          url: "/admin/subjects",
         },
       ],
     },
@@ -54,7 +58,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <Link href="/dashboard">
+        <Link href="/admin">
           <h1 className="text-lg font-semibold">Report System</h1>
         </Link>
       </SidebarHeader>
