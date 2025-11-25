@@ -24,7 +24,7 @@ const formSchema = z.object({
   files: z.array(z.instanceof(File)).min(1, "At least one file is required"),
 });
 
-function WorkUploadForm() {
+function CreateWorkForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -160,4 +160,4 @@ function WorkUploadForm() {
   );
 }
 
-export default WorkUploadForm;
+export default CreateWorkForm;

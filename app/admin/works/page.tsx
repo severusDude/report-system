@@ -1,9 +1,12 @@
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
+import CreateWorkForm from "./(forms)/create";
 
 function Page() {
   return (
-    <AuthenticatedLayout header="Student Overview">
-      <h1>Student Overview</h1>
+    <AuthenticatedLayout header="Works">
+      <h1>Works</h1>
+
+      <CreateWorkForm />
     </AuthenticatedLayout>
   );
 }

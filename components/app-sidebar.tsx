@@ -35,6 +35,10 @@ const data = {
           title: "Subjects",
           url: "/admin/subjects",
         },
+        {
+          title: "Works",
+          url: "/admin/works",
+        },
       ],
     },
     {
