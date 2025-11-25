@@ -71,7 +71,7 @@ function CreateWorkForm() {
 
       // Update database
       const responseWork = await createStudentWork({
-        studentId: "student-1", // TODO: Get from session
+        studentId: "cmievzvgp0005fkez1f57m0rj", // TODO: Get from session
         title: data.title,
         description: data.description,
         attachments: result.data,

@@ -82,6 +82,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       }
     }
 
+    // DB record creation transaction
+
     // Upload files to Cloudinary
     const uploadPromises = files.map(async (file) => {
       const buffer = Buffer.from(await file.arrayBuffer());
@@ -107,7 +109,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     const attachments = uploadResults.map((result: CloudUploadResult) => ({
       id: result.public_id,
-      uploadedBy: "", // TODO: Get current user
+      uploadedBy: "cmievzvfv0000fkezikoxci91", // TODO: Get current user
       // filename: result.original_filename || result.public_id,
       filename: file.name,
       url: result.secure_url,
