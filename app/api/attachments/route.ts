@@ -1,13 +1,25 @@
-import { Attachment } from "@/types/attachment";
-import { NextResponse } from "next/server";
+import { file } from "zod";
+import { v2 as cloudinary } from "cloudinary";
 
-type ResponseData<T> = {
-  success: boolean;
-  message: string;
-  data: T;
-};
+import { NextResponse } from "next/server";
+import { Attachment } from "@/types/attachment";
+import { ResponseData } from "@/types";
+
+// Cloudinary config
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true,
+});
 
 type AttachmentResponse = ResponseData<Attachment[]>;
+
+interface CloudUploadResult {
+  public_id: string;
+  secure_url: string;
+  created_at?: string;
+}
 
 export async function GET(_request: Request): Promise<NextResponse> {
   try {
@@ -70,12 +82,39 @@ export async function POST(request: Request): Promise<NextResponse> {
       }
     }
 
-    const attachments = files.map((file) => ({
-      id: undefined as unknown as string,
+    // DB record creation transaction
+
+    // Upload files to Cloudinary
+    const uploadPromises = files.map(async (file) => {
+      const buffer = Buffer.from(await file.arrayBuffer());
+
+      return new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            resource_type: "auto",
+            folder: "attachments",
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        uploadStream.end(buffer);
+      });
+    });
+
+    const uploadResults = (await Promise.all(
+      uploadPromises
+    )) as CloudUploadResult[];
+
+    const attachments = uploadResults.map((result: CloudUploadResult) => ({
+      id: result.public_id,
+      uploadedBy: "cmievzvfv0000fkezikoxci91", // TODO: Get current user
+      // filename: result.original_filename || result.public_id,
       filename: file.name,
-      url: URL.createObjectURL(file),
-      createdAt: "",
-      updatedAt: "",
+      url: result.secure_url,
+      createdAt: result.created_at ?? new Date().toISOString(),
+      updatedAt: result.created_at ?? new Date().toISOString(),
     }));
 
     return NextResponse.json<AttachmentResponse>(
