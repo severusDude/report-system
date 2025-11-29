@@ -1,3 +1,5 @@
+import LoginForm from "@/app/components/forms/login-form";
+
 export default function Page() {
-  return <div>test</div>;
+  return <LoginForm className="w-full max-w-xs" />;
 }
