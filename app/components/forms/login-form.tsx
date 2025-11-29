@@ -1,20 +1,22 @@
 "use client";
 
+import { Activity, useState } from "react";
+
+import z from "zod";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Controller, useForm } from "react-hook-form";
+
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
-import Link from "next/link";
-import { Activity, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import z from "zod";
 
 const formSchema = z.object({
   email: z.email().min(1, "Email is required"),
