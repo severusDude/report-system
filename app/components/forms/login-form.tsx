@@ -3,13 +3,16 @@
 import { Activity, useState } from "react";
 
 import z from "zod";
+import { toast } from "sonner";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { ResponseData } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { signIn } from "@/services/auth-service";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Field,
@@ -38,11 +41,25 @@ function LoginForm({ className, ...props }: React.ComponentProps<"form">) {
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     try {
-      console.log(data);
+      // console.log(data);
 
-      // TODO: Submit to API
+      const result = (await signIn({
+        email: data.email,
+        password: data.password,
+      })) as ResponseData<string>;
+
+      if (!result.success) {
+        throw new Error(result.message || "Failed to login");
+      }
     } catch (error) {
-      console.error("Failed to create user: ", error);
+      console.error("Failed to login: ", error);
+
+      let errorMessage = "Invalid email or password";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

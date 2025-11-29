@@ -3,13 +3,17 @@
 import { Activity, useState } from "react";
 
 import z from "zod";
+import { toast } from "sonner";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { ResponseData } from "@/types";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { signUp } from "@/services/auth-service";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Field,
@@ -49,6 +53,8 @@ const formSchema = z
   });
 
 function RegisterForm({ className, ...props }: React.ComponentProps<"form">) {
+  const router = useRouter();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: "onChange",
@@ -67,16 +73,27 @@ function RegisterForm({ className, ...props }: React.ComponentProps<"form">) {
   async function onSubmit(data: z.infer<typeof formSchema>) {
     // Submit to API
     try {
-      console.log(data);
+      // console.log(data);
 
-      // TODO: Submit to API
+      const result = (await signUp({
+        email: data.email,
+        password: data.password,
+        name: data.name,
+      })) as ResponseData<string>;
+
+      if (!result.success) {
+        throw new Error(result.message || "Failed to create user");
+      }
+
+      toast.success(`User ${data.name} created successfully`);
+      router.push("/auth/login");
     } catch (error) {
       console.error("Failed to create user: ", error);
+
+      toast.error("Failed to create user");
     } finally {
       setIsSubmitting(false);
     }
-
-    return;
   }
 
   return (
