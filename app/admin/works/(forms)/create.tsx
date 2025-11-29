@@ -4,8 +4,15 @@ import { Activity, useState } from "react";
 
 import { z } from "zod";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
+import {
+  File as FileIcon,
+  Image as ImageIcon,
+  Loader2,
+  RotateCcw,
+  Trash2,
+  X,
+} from "lucide-react";
 
 import { ResponseData } from "@/types";
 import { Input } from "@/components/ui/input";
@@ -13,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Attachment } from "@/types/attachment";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Card, CardContent } from "@/components/ui/card";
 import { createStudentWork } from "@/services/work-service";
 import FileUploadField from "@/components/forms/files-input";
 import {
@@ -22,6 +30,89 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 
+type AddedFile = {
+  file: File;
+  status: "success" | "failed";
+};
+
+function formatFileSize(size: number): string {
+  if (size < 1024 * 1024) {
+    return `${(size / 1024).toFixed(0)} KB`;
+  } else {
+    return `${(size / 1024 / 1024).toFixed(2)} MB`;
+  }
+}
+
+function FileList({
+  addedFiles,
+  onRemove,
+  onRetry,
+}: {
+  addedFiles: AddedFile[];
+  onRemove: (index: number) => void;
+  onRetry: (index: number) => void;
+}) {
+  return (
+    <Activity mode={addedFiles.length > 0 ? "visible" : "hidden"}>
+      <div className="flex flex-col gap-2">
+        {addedFiles.map((added, index) => {
+          const { file, status } = added;
+          const sizeStr = formatFileSize(file.size);
+
+          return (
+            <Card key={file.name}>
+              <CardContent>
+                <div className="flex items-center justify-between w-full gap-2">
+                  <div className="flex items-center gap-2">
+                    {/* File icon */}
+                    {file.type.endsWith("pdf") ? (
+                      <FileIcon className="w-8 h-8 text-muted-foreground" />
+                    ) : (
+                      <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                    )}
+
+                    {/* File info */}
+                    <div className="flex flex-col gap-1">
+                      <span className="font-semibold text-md">{file.name}</span>
+                      <p className="text-sm text-muted-foreground">
+                        {sizeStr} |{" "}
+                        {status === "success"
+                          ? "Ready for upload"
+                          : "Failed to upload"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex items-center justify-end gap-2 text-muted-foreground">
+                    {status === "success" ? (
+                      <Button size="icon" onClick={() => onRemove(index)}>
+                        <Trash2
+                          className="w-8 h-8"
+                          onClick={() => onRemove(index)}
+                        />
+                      </Button>
+                    ) : (
+                      <>
+                        <Button size="icon" onClick={() => onRetry(index)}>
+                          <RotateCcw className="w-8 h-8" />
+                        </Button>
+                        <Button size="icon" onClick={() => onRemove(index)}>
+                          <X className="w-8 h-8" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </Activity>
+  );
+}
+
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
@@ -29,6 +120,7 @@ const formSchema = z.object({
 });
 
 function CreateWorkForm() {
+  const [addedFiles, setAddedFiles] = useState<AddedFile[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -42,7 +134,28 @@ function CreateWorkForm() {
   });
 
   const handleFilesChange = (newFiles: File[]) => {
-    form.setValue("files", newFiles, { shouldValidate: true });
+    // const compressedFiles = await Promise.all(
+    //   newFiles.map(async (file) => {
+    //     // Compression logic
+    //     return file;
+    //   })
+    // );
+    const processed: AddedFile[] = newFiles.map((file) => {
+      const status: "success" | "failed" = "success";
+      return { file, status };
+    });
+
+    const newSuccessFiles = processed
+      .filter((file) => file.status === "success")
+      .map((file) => file.file);
+
+    const currentFormFiles = form.getValues("files");
+    const updatedFormFiles = [...currentFormFiles, ...newSuccessFiles];
+
+    form.setValue("files", updatedFormFiles, { shouldValidate: true });
+    setAddedFiles((prev) => [...prev, ...processed]);
+
+    // form.setValue("files", newFiles, { shouldValidate: true });
   };
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
@@ -95,6 +208,27 @@ function CreateWorkForm() {
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  function onRemove(index: number) {
+    const removed = addedFiles[index];
+    setAddedFiles(addedFiles.filter((_, i) => i !== index));
+
+    // Remove processed images from form
+    if (removed.status === "success") {
+      const currentFormFiles = form.getValues("files");
+      const updatedFormFiles = currentFormFiles.filter(
+        (file) => file !== removed.file
+      );
+
+      form.setValue("files", updatedFormFiles, { shouldValidate: true });
+    }
+  }
+
+  function onRetry(index: number) {
+    const item = addedFiles[index];
+    if (item.status === "failed" && !item.file.type.endsWith("/pdf")) {
     }
   }
 
@@ -156,8 +290,15 @@ function CreateWorkForm() {
             </Field>
           )}
         />
+
+        {/* Added files */}
+        <FileList
+          addedFiles={addedFiles}
+          onRemove={onRemove}
+          onRetry={onRetry}
+        />
       </FieldGroup>
-      <div className="pt-2 flex gap-2 w-full justify-end">
+      <div className="flex justify-end w-full gap-2 pt-2">
         <Button
           type="button"
           variant="outline"

@@ -16,8 +16,8 @@ function FileUploadField({
   onChange?: (files: File[]) => void;
   fileType?: string[];
 }) {
-  const [isDisabled, setIsDisabled] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
+  const [isDisabled, _setIsDisabled] = useState(false);
+  const [_isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   function handleFileAdded(fileList: FileList) {
