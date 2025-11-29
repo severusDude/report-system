@@ -226,7 +226,10 @@ function RegisterForm({ className, ...props }: React.ComponentProps<"form">) {
 
         <p className="mt-4 text-sm text-center text-muted-foreground">
           Already have an account?{" "}
-          <Link href="/auth/login" className="underline hover:text-primary">
+          <Link
+            href="/auth/login"
+            className="underline underline-offset-4 hover:text-primary"
+          >
             Log in
           </Link>
         </p>
