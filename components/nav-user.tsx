@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import {
   BadgeCheck,
   Bell,
@@ -9,7 +10,16 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import { signOut } from "@/services/auth-service";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,12 +29,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar";
 
 export function NavUser({
   user,
@@ -35,7 +39,38 @@ export function NavUser({
     avatar: string;
   };
 }) {
+  const { data: session } = authClient.useSession();
+  const router = useRouter();
+
   const { isMobile } = useSidebar();
+
+  async function handleSignOut() {
+    try {
+      if (!session) {
+        console.warn("Unable to get session or user is not signed in");
+
+        return;
+      }
+
+      const result = await signOut();
+
+      if (!result.success) {
+        throw new Error(result.message || "Failed to sign out");
+      }
+
+      toast.success("Signed out successfully");
+      router.push("/");
+    } catch (error) {
+      let errorMessage = "Failed to sign out";
+      console.error(`${errorMessage}: `, error);
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      toast.error(errorMessage);
+    }
+  }
 
   return (
     <SidebarMenu>
@@ -98,7 +133,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleSignOut}>
               <LogOut />
               Log out
             </DropdownMenuItem>
