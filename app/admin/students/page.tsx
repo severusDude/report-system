@@ -7,7 +7,7 @@ export default function Page() {
       <header className="flex w-full justify-between">
         <h1>Students</h1>
       </header>
-      <Form />
+      <Form mode="create" />
     </AuthenticatedLayout>
   );
 }

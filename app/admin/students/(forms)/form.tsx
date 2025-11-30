@@ -35,24 +35,44 @@ import {
 
 const formSchema = z.object({
   name: z.string().min(1, "Full name is required").max(70, "Name is too long"),
-  parent: z.string().min(1, "Parent is required"),
+  parentId: z.string().min(1, "Parent is required"),
 });
 
-function Form({ className, ...props }: React.ComponentProps<"form">) {
-  const form = useForm<z.infer<typeof formSchema>>({
+type FormValues = z.infer<typeof formSchema>;
+
+interface FormProps extends React.ComponentProps<"form"> {
+  mode: "create" | "update";
+  initialValues?: FormValues & { id: string; parentName?: string };
+  onSuccess?: () => void;
+}
+
+function Form({
+  mode,
+  initialValues,
+  onSuccess,
+  className,
+  ...props
+}: FormProps) {
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     mode: "onChange",
-    defaultValues: {
+    defaultValues: initialValues ?? {
       name: "",
-      parent: "",
+      parentId: "",
     },
   });
 
+  // Form controls
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Parents
   const [parents, setParents] = useState<User[]>([]);
-  const [selectedParent, setSelectedParent] = useState("");
+  const [selectedParent, setSelectedParent] = useState(
+    initialValues?.parentId ?? ""
+  );
+
+  // Search
   const [query, setQuery] = useState(""); // Search query for parents
   const debounceQuery = useDebounce(query, 500);
 
@@ -74,7 +94,16 @@ function Form({ className, ...props }: React.ComponentProps<"form">) {
     fetchParents();
   }, [debounceQuery]);
 
-  async function onSubmit(data: z.infer<typeof formSchema>) {
+  function handleReset() {
+    setIsOpen(false);
+    setSelectedParent(initialValues?.parentId ?? "");
+    setQuery("");
+    setParents([]);
+
+    form.reset(initialValues ?? { name: "", parentId: "" });
+  }
+
+  async function onSubmit(data: FormValues) {
     try {
       console.log(data);
 
@@ -117,16 +146,16 @@ function Form({ className, ...props }: React.ComponentProps<"form">) {
 
         {/* Form/Parent */}
         <Controller
-          name="parent"
+          name="parentId"
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="form-parent">Parent</FieldLabel>
+              <FieldLabel htmlFor="form-parentId">Parent</FieldLabel>
               <Popover open={isOpen} onOpenChange={setIsOpen}>
                 <PopoverTrigger asChild>
                   <Input
                     {...field}
-                    id="form-parent"
+                    id="form-parentId"
                     type="text"
                     autoComplete="off"
                     placeholder="Select the student's parent"
@@ -149,15 +178,20 @@ function Form({ className, ...props }: React.ComponentProps<"form">) {
                         {parents.map((parent) => (
                           <CommandItem
                             key={parent.id}
-                            value={parent.id}
-                            onSelect={(currentValue) => {
-                              setSelectedParent(
-                                currentValue === selectedParent
+                            value={parent.name}
+                            onSelect={() => {
+                              const newName =
+                                parent.name === selectedParent
                                   ? ""
-                                  : currentValue
+                                  : parent.name;
+                              setSelectedParent(newName);
+
+                              form.setValue(
+                                "parentId",
+                                newName ? parent.id : ""
                               );
+
                               setIsOpen(false);
-                              form.setValue("parent", parent.id);
                             }}
                           >
                             {parent.name}
@@ -175,26 +209,18 @@ function Form({ className, ...props }: React.ComponentProps<"form">) {
 
         {/* Actions */}
         <div className="flex w-full justify-end gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              setIsOpen(false);
-              setSelectedParent("");
-              setQuery("");
-              setParents([]);
-
-              form.reset();
-            }}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Clear
+          <Button type="button" variant="outline" onClick={handleReset}>
+            <Trash2 className="mr-1 h-4 w-4" />
+            {mode === "update" ? "Reset" : "Clear"}
           </Button>
           <Button type="submit" disabled={isSubmitting}>
             <Activity mode={isSubmitting ? "visible" : "hidden"}>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-1 h-4 w-4 animate-spin" />
             </Activity>
-            {isSubmitting ? "Saving..." : "Save"}
+            {
+              // What the hell with this ternary operators man??
+              isSubmitting ? "Saving..." : mode === "update" ? "Update" : "Save"
+            }
           </Button>
         </div>
       </FieldGroup>
