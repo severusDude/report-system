@@ -1,15 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { Activity, useEffect, useState } from "react";
 
 import z from "zod";
-import { Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useDebounce } from "@uidotdev/usehooks";
+import { User } from "@/generated/prisma/client";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { searchParents } from "@/actions/users-actions";
 import {
   Field,
   FieldError,
@@ -30,26 +33,6 @@ import {
   CommandList,
 } from "@/components/ui/command";
 
-interface Parent {
-  id: string;
-  name: string;
-}
-
-const parents = [
-  {
-    id: "1",
-    name: "First Parent",
-  },
-  {
-    id: "2",
-    name: "Second Parent",
-  },
-  {
-    id: "3",
-    name: "Third Parent",
-  },
-] as Parent[];
-
 const formSchema = z.object({
   name: z.string().min(1, "Full name is required").max(70, "Name is too long"),
   parent: z.string().min(1, "Parent is required"),
@@ -66,15 +49,40 @@ function CreateForm({ className, ...props }: React.ComponentProps<"form">) {
   });
 
   const [isOpen, setIsOpen] = useState(false);
-  const [parentValue, setParentValue] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [parents, setParents] = useState<User[]>([]);
+  const [selectedParent, setSelectedParent] = useState("");
+  const [query, setQuery] = useState(""); // Search query for parents
+  const debounceQuery = useDebounce(query, 500);
+
+  useEffect(() => {
+    async function fetchParents() {
+      if (!debounceQuery) {
+        return;
+      }
+
+      try {
+        const data = await searchParents({ query: debounceQuery });
+        setParents(data.data);
+      } catch (error) {
+        console.log("Error fetching parents: ", error);
+        setParents([]);
+      }
+    }
+
+    fetchParents();
+  }, [debounceQuery]);
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     try {
       console.log(data);
+
+      setIsSubmitting(true);
     } catch (error) {
       console.log(error);
-
-      return;
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -124,14 +132,17 @@ function CreateForm({ className, ...props }: React.ComponentProps<"form">) {
                     placeholder="Select the student's parent"
                     aria-invalid={fieldState.invalid}
                     contentEditable={false}
-                    value={parentValue}
+                    value={selectedParent}
                     onClick={() => setIsOpen(true)}
                     readOnly
                   />
                 </PopoverTrigger>
                 <PopoverContent className="w-[200px] p-0">
                   <Command>
-                    <CommandInput placeholder="Search for parent" />
+                    <CommandInput
+                      placeholder="Search for parent"
+                      onValueChange={setQuery}
+                    />
                     <CommandList>
                       <CommandEmpty>No results found.</CommandEmpty>
                       <CommandGroup>
@@ -140,8 +151,10 @@ function CreateForm({ className, ...props }: React.ComponentProps<"form">) {
                             key={parent.id}
                             value={parent.name}
                             onSelect={(currentValue) => {
-                              setParentValue(
-                                currentValue === parentValue ? "" : currentValue
+                              setSelectedParent(
+                                currentValue === selectedParent
+                                  ? ""
+                                  : currentValue
                               );
                               setIsOpen(false);
                               form.setValue("parent", parent.name);
@@ -166,13 +179,23 @@ function CreateForm({ className, ...props }: React.ComponentProps<"form">) {
             type="button"
             variant="outline"
             onClick={() => {
+              setIsOpen(false);
+              setSelectedParent("");
+              setQuery("");
+              setParents([]);
+
               form.reset();
             }}
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Clear
           </Button>
-          <Button type="submit">Save</Button>
+          <Button type="submit" disabled={isSubmitting}>
+            <Activity mode={isSubmitting ? "visible" : "hidden"}>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            </Activity>
+            {isSubmitting ? "Saving..." : "Save"}
+          </Button>
         </div>
       </FieldGroup>
     </form>
