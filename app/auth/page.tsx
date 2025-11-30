@@ -1,19 +1,20 @@
 "use client";
 
-import RegisterForm from "@/components/forms/register-form";
 import { authClient } from "@/lib/auth-client";
 import { redirect } from "next/navigation";
 
-export default function Page() {
+function Page() {
   const { data: session, isPending } = authClient.useSession();
 
   if (isPending) {
-    return <p>Loading...</p>;
+    return <div>Loading...</div>;
   }
 
   if (session) {
     redirect("/");
   }
 
-  return <RegisterForm className="w-full max-w-xs" />;
+  redirect("/auth/login");
 }
+
+export default Page;
