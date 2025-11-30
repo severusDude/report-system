@@ -4,6 +4,7 @@ import { APIError } from "better-auth";
 
 import { auth } from "@/lib/auth";
 import { ResponseData } from "@/types";
+import { headers } from "next/headers";
 
 export async function signUp({
   email,
@@ -21,6 +22,7 @@ export async function signUp({
         password,
         name,
       },
+      headers: await headers(),
     });
 
     return {
@@ -52,6 +54,7 @@ export async function signIn({
         email,
         password,
       },
+      headers: await headers(),
     });
 
     return {
@@ -74,6 +77,28 @@ export async function signIn({
     return {
       success: false,
       message: "Error logging in user",
+      data: "",
+    };
+  }
+}
+
+export async function signOut(): Promise<ResponseData<string>> {
+  try {
+    await auth.api.signOut({
+      headers: await headers(),
+    });
+
+    return {
+      success: true,
+      message: "User logged out successfully",
+      data: "",
+    };
+  } catch (error) {
+    console.error("Error logging out user: ", error);
+
+    return {
+      success: false,
+      message: "Error logging out user",
       data: "",
     };
   }
