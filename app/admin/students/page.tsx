@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
-import Form from "@/app/admin/students/(forms)/create";
+import Form from "@/app/admin/students/(forms)/form";
 
 export default function Page() {
   return (
