@@ -18,6 +18,11 @@ enum Role {
   TEACHER
 }
 
+enum Gender {
+  MALE
+  FEMALE
+}
+
 model User {
   id            String    @id
   name          String
@@ -84,8 +89,22 @@ model Verification {
 }
 
 model Student {
-  id   String @id @default(cuid())
-  name String
+  id String @id @default(cuid())
+
+  // Personal data
+  name             String
+  gender           Gender
+  nisn             String
+  nik              String
+  citizenship      String
+  familyCardNumber String
+
+  // Birth data
+  birthPlace     String
+  dateOfBirth    DateTime
+  birthCertRegNo String?
+
+  hasSpecialNeeds Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
