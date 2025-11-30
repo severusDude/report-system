@@ -38,7 +38,7 @@ const formSchema = z.object({
   parent: z.string().min(1, "Parent is required"),
 });
 
-function CreateForm({ className, ...props }: React.ComponentProps<"form">) {
+function Form({ className, ...props }: React.ComponentProps<"form">) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: "onChange",
@@ -149,7 +149,7 @@ function CreateForm({ className, ...props }: React.ComponentProps<"form">) {
                         {parents.map((parent) => (
                           <CommandItem
                             key={parent.id}
-                            value={parent.name}
+                            value={parent.id}
                             onSelect={(currentValue) => {
                               setSelectedParent(
                                 currentValue === selectedParent
@@ -157,7 +157,7 @@ function CreateForm({ className, ...props }: React.ComponentProps<"form">) {
                                   : currentValue
                               );
                               setIsOpen(false);
-                              form.setValue("parent", parent.name);
+                              form.setValue("parent", parent.id);
                             }}
                           >
                             {parent.name}
@@ -202,4 +202,4 @@ function CreateForm({ className, ...props }: React.ComponentProps<"form">) {
   );
 }
 
-export default CreateForm;
+export default Form;

@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
-import CreateForm from "@/app/admin/students/(forms)/create";
+import Form from "@/app/admin/students/(forms)/create";
 
 export default function Page() {
   return (
@@ -7,7 +7,7 @@ export default function Page() {
       <header className="flex w-full justify-between">
         <h1>Students</h1>
       </header>
-      <CreateForm />
+      <Form />
     </AuthenticatedLayout>
   );
 }
