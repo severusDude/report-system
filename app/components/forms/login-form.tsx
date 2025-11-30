@@ -20,6 +20,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   email: z.email().min(1, "Email is required"),
@@ -27,6 +28,8 @@ const formSchema = z.object({
 });
 
 function LoginForm({ className, ...props }: React.ComponentProps<"form">) {
+  const router = useRouter();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: "onChange",
@@ -51,6 +54,8 @@ function LoginForm({ className, ...props }: React.ComponentProps<"form">) {
       if (!result.success) {
         throw new Error(result.message || "Failed to login");
       }
+
+      router.push("/admin");
     } catch (error) {
       console.error("Failed to login: ", error);
 
