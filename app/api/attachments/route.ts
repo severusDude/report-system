@@ -1,9 +1,11 @@
 import { file } from "zod";
 import { v2 as cloudinary } from "cloudinary";
 
+import { auth } from "@/lib/auth";
+import { ResponseData } from "@/types";
+import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { Attachment } from "@/types/attachment";
-import { ResponseData } from "@/types";
 
 // Cloudinary config
 cloudinary.config({
@@ -40,6 +42,25 @@ export async function GET(_request: Request): Promise<NextResponse> {
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
+  "use server";
+
+  // Allow only authenticated users
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    return NextResponse.json<AttachmentResponse>(
+      {
+        success: false,
+        message: "Unauthorized",
+        data: [],
+      },
+      { status: 401 }
+    );
+  }
+
+  // Allow only POST requests
   if (request.method !== "POST") {
     return NextResponse.json<AttachmentResponse>(
       {
