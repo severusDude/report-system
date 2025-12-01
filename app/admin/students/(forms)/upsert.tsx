@@ -46,7 +46,7 @@ interface FormProps extends React.ComponentProps<"form"> {
   onSuccess?: () => void;
 }
 
-function Form({
+function UpsertForm({
   mode,
   initialValues,
   onSuccess,
@@ -228,4 +228,4 @@ function Form({
   );
 }
 
-export default Form;
+export default UpsertForm;
