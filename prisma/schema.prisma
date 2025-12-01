@@ -93,18 +93,18 @@ model Student {
 
   // Personal data
   name             String
-  gender           Gender
-  nisn             String
-  nik              String
-  citizenship      String
-  familyCardNumber String
+  gender           Gender?
+  nisn             String  @unique
+  nik              String?
+  citizenship      String?
+  familyCardNumber String?
 
   // Birth data
-  birthPlace     String
-  dateOfBirth    DateTime
+  birthPlace     String?
+  dateOfBirth    DateTime?
   birthCertRegNo String?
 
-  hasSpecialNeeds Boolean @default(false)
+  hasSpecialNeeds Boolean? @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
