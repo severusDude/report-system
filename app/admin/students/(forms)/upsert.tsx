@@ -3,16 +3,21 @@
 import { Activity, useEffect, useState } from "react";
 
 import z from "zod";
-import { Loader2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { Controller, useForm } from "react-hook-form";
+import { ChevronDownIcon, Loader2, Trash2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useDebounce } from "@uidotdev/usehooks";
 import { User } from "@/generated/prisma/client";
+import { Gender } from "@/generated/prisma/browser";
+import { Calendar } from "@/components/ui/calendar";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { searchParents } from "@/actions/users-actions";
+import { saveStudent } from "@/actions/students-actions";
+import { StudentUpsertSchema as formSchema } from "@/schemas/student";
 import {
   Field,
   FieldError,
@@ -25,6 +30,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Command,
   CommandEmpty,
   CommandGroup,
@@ -32,11 +44,6 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-
-const formSchema = z.object({
-  name: z.string().min(1, "Full name is required").max(70, "Name is too long"),
-  parentId: z.string().min(1, "Parent is required"),
-});
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -58,12 +65,20 @@ function UpsertForm({
     mode: "onChange",
     defaultValues: initialValues ?? {
       name: "",
+      gender: Gender.MALE,
       parentId: "",
+      nisn: "",
+      nik: "",
+      citizenship: "",
+      familyCardNumber: "",
+      birthPlace: "",
+      dateOfBirth: new Date(),
     },
   });
 
   // Form controls
-  const [isOpen, setIsOpen] = useState(false);
+  const [isSearchParentOpen, setIsSearchParentOpen] = useState(false);
+  const [isDobOpen, setIsDobOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Parents
@@ -95,12 +110,12 @@ function UpsertForm({
   }, [debounceQuery]);
 
   function handleReset() {
-    setIsOpen(false);
+    setIsSearchParentOpen(false);
     setSelectedParent(initialValues?.parentId ?? "");
     setQuery("");
     setParents([]);
 
-    form.reset(initialValues ?? { name: "", parentId: "" });
+    form.reset(initialValues ?? {});
   }
 
   async function onSubmit(data: FormValues) {
@@ -108,8 +123,26 @@ function UpsertForm({
       console.log(data);
 
       setIsSubmitting(true);
+
+      if (mode === "create") {
+        const result = await saveStudent(data);
+
+        if (!result.success) {
+          throw new Error(result.message || "Failed to create student");
+        }
+
+        handleReset();
+        toast.success(`Student ${data.name} created successfully`);
+      }
     } catch (error) {
-      console.log(error);
+      if (error instanceof Error) {
+        console.log(error);
+        toast.error(error.message);
+
+        return;
+      }
+
+      console.error(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -151,7 +184,10 @@ function UpsertForm({
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="form-parentId">Parent</FieldLabel>
-              <Popover open={isOpen} onOpenChange={setIsOpen}>
+              <Popover
+                open={isSearchParentOpen}
+                onOpenChange={setIsSearchParentOpen}
+              >
                 <PopoverTrigger asChild>
                   <Input
                     {...field}
@@ -162,7 +198,7 @@ function UpsertForm({
                     aria-invalid={fieldState.invalid}
                     contentEditable={false}
                     value={selectedParent}
-                    onClick={() => setIsOpen(true)}
+                    onClick={() => setIsSearchParentOpen(true)}
                     readOnly
                   />
                 </PopoverTrigger>
@@ -191,7 +227,7 @@ function UpsertForm({
                                 newName ? parent.id : ""
                               );
 
-                              setIsOpen(false);
+                              setIsSearchParentOpen(false);
                             }}
                           >
                             {parent.name}
@@ -207,13 +243,179 @@ function UpsertForm({
           )}
         />
 
+        {/* Form/Gender */}
+        <Controller
+          name="gender"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field>
+              <FieldLabel htmlFor="form-gender">Gender</FieldLabel>
+              <Select
+                {...field}
+                onValueChange={field.onChange}
+                value={field.value}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={Gender.MALE}>Male</SelectItem>
+                  <SelectItem value={Gender.FEMALE}>Female</SelectItem>
+                </SelectContent>
+              </Select>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+
+        {/* Form/Date of Birth */}
+        <Controller
+          name="dateOfBirth"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="form-dob">Date of Birth</FieldLabel>
+              <Popover open={isDobOpen} onOpenChange={setIsDobOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="justify-between">
+                    {field.value
+                      ? field.value.toLocaleDateString("en-GB")
+                      : "Select Date"}
+                    <ChevronDownIcon />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-auto overflow-hidden p-0"
+                  align="start"
+                >
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    captionLayout="dropdown"
+                    onSelect={(date) => {
+                      field.onChange(date);
+                      setIsDobOpen(false);
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+
+        {/* Form/Birth Place */}
+        <Controller
+          name="birthPlace"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="form-birth-place">Birth Place</FieldLabel>
+              <Input
+                {...field}
+                id="form-birth-place"
+                type="text"
+                placeholder="Birth Place"
+                autoComplete="off"
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+
+        {/* Form/NISN */}
+        <Controller
+          name="nisn"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="form-nisn">NISN</FieldLabel>
+              <Input
+                {...field}
+                id="form-nisn"
+                type="text"
+                placeholder="NISN"
+                autoComplete="off"
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+
+        {/* Form/Family Card Number */}
+        <Controller
+          name="familyCardNumber"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="form-family-card-number">
+                Family Card Number
+              </FieldLabel>
+              <Input
+                {...field}
+                id="form-family-card-number"
+                type="text"
+                placeholder="Family Card Number"
+                autoComplete="off"
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+
+        {/* Form/NIK */}
+        <Controller
+          name="nik"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="form-nik">NIK</FieldLabel>
+              <Input
+                {...field}
+                id="form-nik"
+                type="text"
+                placeholder="NIK"
+                autoComplete="off"
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+
+        {/* Form/Citizenship */}
+        <Controller
+          name="citizenship"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="form-citizenship">Citizenship</FieldLabel>
+              <Input
+                {...field}
+                id="form-citizenship"
+                type="text"
+                placeholder="Citizenship"
+                autoComplete="off"
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+
         {/* Actions */}
         <div className="flex w-full justify-end gap-2">
           <Button type="button" variant="outline" onClick={handleReset}>
             <Trash2 className="mr-1 h-4 w-4" />
             {mode === "update" ? "Reset" : "Clear"}
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            disabled={isSubmitting || !form.formState.isValid}
+          >
             <Activity mode={isSubmitting ? "visible" : "hidden"}>
               <Loader2 className="mr-1 h-4 w-4 animate-spin" />
             </Activity>
