@@ -45,7 +45,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = z.input<typeof formSchema>;
 
 interface FormProps extends React.ComponentProps<"form"> {
   mode: "create" | "update";
@@ -60,12 +60,12 @@ function UpsertForm({
   className,
   ...props
 }: FormProps) {
-  const form = useForm<FormValues>({
+  const form = useForm<z.input<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: "onChange",
-    defaultValues: initialValues ?? {
+    defaultValues: {
       name: "",
-      gender: Gender.MALE,
+      gender: null,
       parentId: "",
       nisn: "",
       nik: "",
@@ -118,7 +118,7 @@ function UpsertForm({
     form.reset(initialValues ?? {});
   }
 
-  async function onSubmit(data: FormValues) {
+  async function onSubmit(data: z.output<typeof formSchema>) {
     try {
       console.log(data);
 
@@ -253,7 +253,7 @@ function UpsertForm({
               <Select
                 {...field}
                 onValueChange={field.onChange}
-                value={field.value}
+                value={field.value ? field.value : undefined}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select Gender" />

@@ -3,6 +3,10 @@ import z from "zod";
 import { Gender } from "@/generated/prisma/enums";
 import { Prisma } from "@/generated/prisma/client";
 
+const nisnLength = 10;
+const nikLength = 16;
+const familyCardNumberLength = 16;
+
 // Schema for upserting a student from the form
 export const StudentUpsertSchema = z.object({
   id: z.string().optional(),
@@ -10,13 +14,25 @@ export const StudentUpsertSchema = z.object({
     .string()
     .min(1, "Full name is required")
     .max(70, "Name cannot exceed 70 characters"),
-  gender: z.enum(Gender),
+  gender: z.enum([Gender.MALE, Gender.FEMALE]).or(z.literal(null)),
   parentId: z.string().min(1, "Parent is required"),
-  nisn: z.string().min(1, "NISN is required"),
-  nik: z.string().min(1, "NIK is required"),
-  citizenship: z.string().min(1, "Citizenship is required"),
-  familyCardNumber: z.string().min(1, "Family Card Number is required"),
-  birthPlace: z.string().min(1, "Birth Place is required"),
+  nisn: z
+    .string()
+    .min(1, "NISN is required")
+    .length(nisnLength, `NISN must be ${nisnLength} characters long`),
+  nik: z
+    .string()
+    .length(nikLength, `NIK must be ${nikLength} characters long`)
+    .or(z.literal("")),
+  citizenship: z.string().min(1, "Citizenship is required").or(z.literal("")),
+  familyCardNumber: z
+    .string()
+    .length(
+      familyCardNumberLength,
+      `Family Card Number must be ${familyCardNumberLength} characters long`
+    )
+    .or(z.literal("")),
+  birthPlace: z.string().or(z.literal("")),
   dateOfBirth: z.date(),
 });
 
