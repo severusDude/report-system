@@ -33,7 +33,7 @@ export const StudentUpsertSchema = z.object({
     )
     .or(z.literal("")),
   birthPlace: z.string().or(z.literal("")),
-  dateOfBirth: z.date(),
+  dateOfBirth: z.date().or(z.literal(null)),
 });
 
 // Schema for creating a student

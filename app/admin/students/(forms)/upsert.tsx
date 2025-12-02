@@ -5,7 +5,7 @@ import { Activity, useEffect, useState } from "react";
 import z from "zod";
 import { toast } from "sonner";
 import { Controller, useForm } from "react-hook-form";
-import { ChevronDownIcon, Loader2, Trash2 } from "lucide-react";
+import { CalendarDays, Loader2, Trash2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -72,7 +72,7 @@ function UpsertForm({
       citizenship: "",
       familyCardNumber: "",
       birthPlace: "",
-      dateOfBirth: new Date(),
+      dateOfBirth: null,
     },
   });
 
@@ -277,11 +277,14 @@ function UpsertForm({
               <FieldLabel htmlFor="form-dob">Date of Birth</FieldLabel>
               <Popover open={isDobOpen} onOpenChange={setIsDobOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="justify-between">
+                  <Button
+                    variant="outline"
+                    className="justify-between text-gray-500 hover:text-gray-500 font-normal"
+                  >
                     {field.value
                       ? field.value.toLocaleDateString("en-GB")
                       : "Select Date"}
-                    <ChevronDownIcon />
+                    <CalendarDays />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
@@ -290,7 +293,7 @@ function UpsertForm({
                 >
                   <Calendar
                     mode="single"
-                    selected={field.value}
+                    selected={field.value ? field.value : undefined}
                     captionLayout="dropdown"
                     onSelect={(date) => {
                       field.onChange(date);
