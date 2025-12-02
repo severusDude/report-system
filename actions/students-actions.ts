@@ -26,9 +26,14 @@ export async function saveStudent(
   } catch (error) {
     console.log("Failed to create student: ", error);
 
+    let errorMessage = "Failed to create student due to server error";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+
     return {
       success: false,
-      message: "Failed to create student due to server error",
+      message: errorMessage,
       data: null,
     };
   }
