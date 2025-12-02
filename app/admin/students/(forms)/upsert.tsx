@@ -163,7 +163,9 @@ function UpsertForm({
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="form-name">Name</FieldLabel>
+              <FieldLabel htmlFor="form-name" required>
+                Name
+              </FieldLabel>
               <Input
                 {...field}
                 id="form-name"
@@ -183,7 +185,9 @@ function UpsertForm({
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="form-parentId">Parent</FieldLabel>
+              <FieldLabel htmlFor="form-parentId" required>
+                Parent
+              </FieldLabel>
               <Popover
                 open={isSearchParentOpen}
                 onOpenChange={setIsSearchParentOpen}
@@ -333,7 +337,9 @@ function UpsertForm({
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="form-nisn">NISN</FieldLabel>
+              <FieldLabel htmlFor="form-nisn" required>
+                NISN
+              </FieldLabel>
               <Input
                 {...field}
                 id="form-nisn"
