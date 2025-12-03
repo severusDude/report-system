@@ -343,7 +343,7 @@ function UpsertForm({
               <Input
                 {...field}
                 id="form-nisn"
-                type="text"
+                type="number"
                 placeholder="NISN"
                 autoComplete="off"
                 aria-invalid={fieldState.invalid}
@@ -382,14 +382,7 @@ function UpsertForm({
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="form-nik">NIK</FieldLabel>
-              <Input
-                {...field}
-                id="form-nik"
-                type="text"
-                placeholder="NIK"
-                autoComplete="off"
-                aria-invalid={fieldState.invalid}
-              />
+              <Input {...field} />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
