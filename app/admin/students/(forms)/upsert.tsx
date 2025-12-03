@@ -44,6 +44,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { NumericalInput } from "@/components/ui/numerical-input";
 
 type FormValues = z.input<typeof formSchema>;
 
@@ -108,6 +109,38 @@ function UpsertForm({
 
     fetchParents();
   }, [debounceQuery]);
+
+  // function handleNumericalInput(event: React.KeyboardEvent<HTMLInputElement>) {
+  //   // Allow special keys
+  //   if (
+  //     ["Backspace", "Delete", "Tab", "Escape", "Enter", "."].includes(event.key)
+  //   ) {
+  //     return;
+  //   }
+
+  //   // Allow modifier keys
+  //   if (
+  //     (event.ctrlKey || event.metaKey) &&
+  //     ["a", "c", "v", "x"].includes(event.key)
+  //   ) {
+  //     return;
+  //   }
+
+  //   // Prevent non-numeric input
+  //   if (isNaN(Number(event.key)) || event.key === " ") {
+  //     event.preventDefault();
+  //   }
+  // }
+
+  // function handleNumericalPaste(event: React.ClipboardEvent<HTMLInputElement>) {
+  //   // Prevent pasting non-numeric values
+  //   if (
+  //     event.clipboardData &&
+  //     !/^\d+$/.test(event.clipboardData.getData("text"))
+  //   ) {
+  //     event.preventDefault();
+  //   }
+  // }
 
   function handleReset() {
     setIsSearchParentOpen(false);
@@ -340,10 +373,20 @@ function UpsertForm({
               <FieldLabel htmlFor="form-nisn" required>
                 NISN
               </FieldLabel>
-              <Input
+              {/* <Input
                 {...field}
                 id="form-nisn"
-                type="number"
+                type="text"
+                placeholder="NISN"
+                autoComplete="off"
+                aria-invalid={fieldState.invalid}
+                onKeyDown={handleNumericalInput}
+                onPaste={handleNumericalPaste}
+              /> */}
+              <NumericalInput
+                {...field}
+                id="form-nisn"
+                type="text"
                 placeholder="NISN"
                 autoComplete="off"
                 aria-invalid={fieldState.invalid}
@@ -362,7 +405,7 @@ function UpsertForm({
               <FieldLabel htmlFor="form-family-card-number">
                 Family Card Number
               </FieldLabel>
-              <Input
+              <NumericalInput
                 {...field}
                 id="form-family-card-number"
                 type="text"
@@ -382,7 +425,14 @@ function UpsertForm({
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="form-nik">NIK</FieldLabel>
-              <Input {...field} />
+              <NumericalInput
+                {...field}
+                id="form-nik"
+                type="text"
+                placeholder="NIK"
+                autoComplete="off"
+                aria-invalid={fieldState.invalid}
+              />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
