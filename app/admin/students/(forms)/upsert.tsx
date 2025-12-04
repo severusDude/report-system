@@ -110,38 +110,6 @@ function UpsertForm({
     fetchParents();
   }, [debounceQuery]);
 
-  // function handleNumericalInput(event: React.KeyboardEvent<HTMLInputElement>) {
-  //   // Allow special keys
-  //   if (
-  //     ["Backspace", "Delete", "Tab", "Escape", "Enter", "."].includes(event.key)
-  //   ) {
-  //     return;
-  //   }
-
-  //   // Allow modifier keys
-  //   if (
-  //     (event.ctrlKey || event.metaKey) &&
-  //     ["a", "c", "v", "x"].includes(event.key)
-  //   ) {
-  //     return;
-  //   }
-
-  //   // Prevent non-numeric input
-  //   if (isNaN(Number(event.key)) || event.key === " ") {
-  //     event.preventDefault();
-  //   }
-  // }
-
-  // function handleNumericalPaste(event: React.ClipboardEvent<HTMLInputElement>) {
-  //   // Prevent pasting non-numeric values
-  //   if (
-  //     event.clipboardData &&
-  //     !/^\d+$/.test(event.clipboardData.getData("text"))
-  //   ) {
-  //     event.preventDefault();
-  //   }
-  // }
-
   function handleReset() {
     setIsSearchParentOpen(false);
     setSelectedParent(initialValues?.parentId ?? "");
