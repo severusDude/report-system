@@ -5,7 +5,7 @@ import { Activity, useEffect, useState } from "react";
 import z from "zod";
 import { toast } from "sonner";
 import { Controller, useForm } from "react-hook-form";
-import { ChevronDownIcon, Loader2, Trash2 } from "lucide-react";
+import { CalendarDays, Loader2, Trash2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -44,8 +44,9 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { NumericalInput } from "@/components/ui/numerical-input";
 
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = z.input<typeof formSchema>;
 
 interface FormProps extends React.ComponentProps<"form"> {
   mode: "create" | "update";
@@ -60,19 +61,19 @@ function UpsertForm({
   className,
   ...props
 }: FormProps) {
-  const form = useForm<FormValues>({
+  const form = useForm<z.input<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: "onChange",
-    defaultValues: initialValues ?? {
+    defaultValues: {
       name: "",
-      gender: Gender.MALE,
+      gender: null,
       parentId: "",
       nisn: "",
       nik: "",
       citizenship: "",
       familyCardNumber: "",
       birthPlace: "",
-      dateOfBirth: new Date(),
+      dateOfBirth: null,
     },
   });
 
@@ -109,6 +110,38 @@ function UpsertForm({
     fetchParents();
   }, [debounceQuery]);
 
+  // function handleNumericalInput(event: React.KeyboardEvent<HTMLInputElement>) {
+  //   // Allow special keys
+  //   if (
+  //     ["Backspace", "Delete", "Tab", "Escape", "Enter", "."].includes(event.key)
+  //   ) {
+  //     return;
+  //   }
+
+  //   // Allow modifier keys
+  //   if (
+  //     (event.ctrlKey || event.metaKey) &&
+  //     ["a", "c", "v", "x"].includes(event.key)
+  //   ) {
+  //     return;
+  //   }
+
+  //   // Prevent non-numeric input
+  //   if (isNaN(Number(event.key)) || event.key === " ") {
+  //     event.preventDefault();
+  //   }
+  // }
+
+  // function handleNumericalPaste(event: React.ClipboardEvent<HTMLInputElement>) {
+  //   // Prevent pasting non-numeric values
+  //   if (
+  //     event.clipboardData &&
+  //     !/^\d+$/.test(event.clipboardData.getData("text"))
+  //   ) {
+  //     event.preventDefault();
+  //   }
+  // }
+
   function handleReset() {
     setIsSearchParentOpen(false);
     setSelectedParent(initialValues?.parentId ?? "");
@@ -118,7 +151,7 @@ function UpsertForm({
     form.reset(initialValues ?? {});
   }
 
-  async function onSubmit(data: FormValues) {
+  async function onSubmit(data: z.output<typeof formSchema>) {
     try {
       console.log(data);
 
@@ -163,7 +196,9 @@ function UpsertForm({
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="form-name">Name</FieldLabel>
+              <FieldLabel htmlFor="form-name" required>
+                Name
+              </FieldLabel>
               <Input
                 {...field}
                 id="form-name"
@@ -183,7 +218,9 @@ function UpsertForm({
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="form-parentId">Parent</FieldLabel>
+              <FieldLabel htmlFor="form-parentId" required>
+                Parent
+              </FieldLabel>
               <Popover
                 open={isSearchParentOpen}
                 onOpenChange={setIsSearchParentOpen}
@@ -253,7 +290,7 @@ function UpsertForm({
               <Select
                 {...field}
                 onValueChange={field.onChange}
-                value={field.value}
+                value={field.value ? field.value : undefined}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select Gender" />
@@ -277,11 +314,14 @@ function UpsertForm({
               <FieldLabel htmlFor="form-dob">Date of Birth</FieldLabel>
               <Popover open={isDobOpen} onOpenChange={setIsDobOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="justify-between">
+                  <Button
+                    variant="outline"
+                    className="justify-between text-gray-500 hover:text-gray-500 font-normal"
+                  >
                     {field.value
                       ? field.value.toLocaleDateString("en-GB")
                       : "Select Date"}
-                    <ChevronDownIcon />
+                    <CalendarDays />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
@@ -290,7 +330,7 @@ function UpsertForm({
                 >
                   <Calendar
                     mode="single"
-                    selected={field.value}
+                    selected={field.value ? field.value : undefined}
                     captionLayout="dropdown"
                     onSelect={(date) => {
                       field.onChange(date);
@@ -330,8 +370,20 @@ function UpsertForm({
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="form-nisn">NISN</FieldLabel>
-              <Input
+              <FieldLabel htmlFor="form-nisn" required>
+                NISN
+              </FieldLabel>
+              {/* <Input
+                {...field}
+                id="form-nisn"
+                type="text"
+                placeholder="NISN"
+                autoComplete="off"
+                aria-invalid={fieldState.invalid}
+                onKeyDown={handleNumericalInput}
+                onPaste={handleNumericalPaste}
+              /> */}
+              <NumericalInput
                 {...field}
                 id="form-nisn"
                 type="text"
@@ -353,7 +405,7 @@ function UpsertForm({
               <FieldLabel htmlFor="form-family-card-number">
                 Family Card Number
               </FieldLabel>
-              <Input
+              <NumericalInput
                 {...field}
                 id="form-family-card-number"
                 type="text"
@@ -373,7 +425,7 @@ function UpsertForm({
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="form-nik">NIK</FieldLabel>
-              <Input
+              <NumericalInput
                 {...field}
                 id="form-nik"
                 type="text"

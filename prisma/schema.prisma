@@ -5,8 +5,10 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider            = "prisma-client"
+  output              = "../generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "ts"
 }
 
 datasource db {
@@ -16,11 +18,37 @@ datasource db {
 enum Role {
   PARENT
   TEACHER
+  ADMIN
 }
 
 enum Gender {
   MALE
   FEMALE
+}
+
+enum SubjectType {
+  GENERAL
+  ISLAMIC
+}
+
+enum Grade {
+  A_PlUS
+  A
+  B_PLUS
+  B
+  C_PLUS
+  C
+  D
+  E
+  UNSET
+}
+
+enum AttendanceType {
+  PRESENT
+  ABSENT
+  SICK
+  ON_LEAVE
+  UNSET
 }
 
 model User {
@@ -37,6 +65,7 @@ model User {
   role Role @default(PARENT)
 
   students    Student[]
+  teachings   Enrollment[]
   attachments Attachment[]
 
   @@unique([email])
@@ -93,18 +122,27 @@ model Student {
 
   // Personal data
   name             String
-  gender           Gender
-  nisn             String
-  nik              String
-  citizenship      String
-  familyCardNumber String
+  gender           Gender?
+  nisn             String  @unique
+  nik              String?
+  address          String?
+  citizenship      String?
+  familyCardNumber String?
+
+  // Profile data
+  imageUrl String?
+  bio      String?
+
+  // Contacts
+  phoneNumber String?
+  email       String?
 
   // Birth data
-  birthPlace     String
-  dateOfBirth    DateTime
+  birthPlace     String?
+  dateOfBirth    DateTime?
   birthCertRegNo String?
 
-  hasSpecialNeeds Boolean @default(false)
+  hasSpecialNeeds Boolean? @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -112,61 +150,87 @@ model Student {
   parent   User   @relation(fields: [parentId], references: [id])
   parentId String
 
-  reports Report[]
-  works   Work[]
+  enrollments Enrollment[]
+  attendances Attendance[]
+  works       Work[]
 }
 
-model Report {
-  id          String  @id @default(cuid())
-  title       String
-  isPublished Boolean @default(false)
+model Term {
+  id String @id @default(cuid())
+
+  name String
+  year Int
+
+  enrollments Enrollment[]
+}
+
+model Enrollment {
+  id String @id @default(cuid())
+
+  grade     Grade   @default(UNSET)
+  asessment String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  teacher   User    @relation(fields: [teacherId], references: [id])
+  teacherId String
+  term      Term    @relation(fields: [termId], references: [id])
+  termId    String
   student   Student @relation(fields: [studentId], references: [id])
   studentId String
-
-  subjects ReportSubject[]
-}
-
-model Subject {
-  id   String @id @default(cuid())
-  name String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  reports ReportSubject[]
-  works   Work[]
-}
-
-model ReportSubject {
-  report   Report @relation(fields: [reportId], references: [id])
-  reportId String
-
   subject   Subject @relation(fields: [subjectId], references: [id])
   subjectId String
 
-  grade   Float?
-  remarks String?
+  attendances Attendance[]
+  works       Work[]
 
-  @@id([reportId, subjectId])
+  @@unique([studentId, subjectId])
+}
+
+model Attendance {
+  id String @id @default(cuid())
+
+  type    AttendanceType @default(UNSET)
+  session Int
+  date    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id])
+  enrollmentId String
+  student      Student    @relation(fields: [studentId], references: [id])
+  studentId    String
+
+  @@unique([studentId, enrollmentId, session])
+}
+
+model Subject {
+  id String @id @default(cuid())
+
+  name String
+  type SubjectType @default(GENERAL)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  enrollments Enrollment[]
 }
 
 model Work {
   id          String  @id @default(cuid())
   title       String
   description String?
+  isPublished Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  student   Student @relation(fields: [studentId], references: [id])
-  studentId String
-
-  subject   Subject? @relation(fields: [subjectId], references: [id])
-  subjectId String?
+  student      Student     @relation(fields: [studentId], references: [id])
+  studentId    String
+  enrollment   Enrollment? @relation(fields: [enrollmentId], references: [id])
+  enrollmentId String?
 
   attachments Attachment[]
 }

@@ -40,6 +40,19 @@ class StudentService {
 
     let result: Student;
 
+    // Check if nisn is unique
+    const existingStudent = await prisma.student.findUnique({
+      where: { nisn: studentData.nisn },
+    });
+
+    if (existingStudent) {
+      return {
+        success: false,
+        message: "Failed to upsert student: NISN already exists",
+        data: null,
+      };
+    }
+
     if (id) {
       // Updating existing student
       try {
