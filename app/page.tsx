@@ -1,11 +1,26 @@
+import { Edit, HomeIcon, MoonIcon, SearchIcon } from "lucide-react";
+
 import Link from "next/link";
-// import Image from "next/image";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Role } from "@/generated/prisma/enums";
-import { Edit, HomeIcon, MoonIcon, SearchIcon } from "lucide-react";
+import { NavUser } from "@/components/nav-user";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import {
   Sidebar,
   SidebarContent,
@@ -19,21 +34,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { NavUser } from "@/components/nav-user";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group";
 
 type Data = {
   student: {

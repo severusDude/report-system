@@ -2,8 +2,9 @@ import z from "zod";
 
 import { prisma } from "@/lib/prisma";
 import { ResponseData } from "@/types";
-import { Prisma, Student } from "@/generated/prisma/client";
 import { StudentUpsertSchema } from "@/schemas/student";
+import { Prisma, Student } from "@/generated/prisma/client";
+import { EnrollmentGetPayload } from "@/generated/prisma/models";
 
 class StudentService {
   async getStudents({
@@ -100,6 +101,91 @@ class StudentService {
         success: true,
         message: "Student created successfully",
         data: result,
+      };
+    }
+  }
+
+  async indexStudentEnrollments({ nisn }: { nisn: string }): Promise<
+    ResponseData<
+      | EnrollmentGetPayload<{
+          include: { subject: true };
+        }>[]
+      | null
+    >
+  > {
+    try {
+      const result = await prisma.student.findUnique({
+        where: {
+          nisn: nisn,
+        },
+        select: {
+          enrollments: {
+            include: {
+              subject: true,
+            },
+          },
+        },
+      });
+
+      if (!result) {
+        return {
+          success: false,
+          message: "Failed to fetch student enrollments: Student not found",
+          data: null,
+        };
+      }
+
+      return {
+        success: true,
+        message: "Student enrollments fetched successfully",
+        data: result.enrollments,
+      };
+    } catch (error) {
+      console.log(error);
+
+      return {
+        success: false,
+        message: "Server failed to fetch student enrollments",
+        data: null,
+      };
+    }
+  }
+
+  async getStudentEnrollment({
+    id,
+  }: {
+    id: string;
+  }): Promise<
+    ResponseData<EnrollmentGetPayload<{ include: { subject: true } }> | null>
+  > {
+    try {
+      const result = await prisma.enrollment.findUnique({
+        where: { id },
+        include: {
+          subject: true,
+        },
+      });
+
+      if (!result) {
+        return {
+          success: false,
+          message: "Failed to fetch student enrollment: Enrollment not found",
+          data: null,
+        };
+      }
+
+      return {
+        success: true,
+        message: "Student enrollment fetched successfully",
+        data: result,
+      };
+    } catch (error) {
+      console.log(error);
+
+      return {
+        success: false,
+        message: "Server failed to fetch student enrollment",
+        data: null,
       };
     }
   }
