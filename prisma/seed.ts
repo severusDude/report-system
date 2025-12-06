@@ -16,16 +16,16 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
 const users: UserCreateManyInput[] = [
-  {
-    email: "teacher@example.com",
-    name: "teacher",
-    role: Role.TEACHER,
-  },
-  {
-    email: "parent@example.com",
-    name: "parent",
-    role: Role.PARENT,
-  },
+  // {
+  //   email: "teacher@example.com",
+  //   name: "teacher",
+  //   role: Role.TEACHER,
+  // },
+  // {
+  //   email: "parent@example.com",
+  //   name: "parent",
+  //   role: Role.PARENT,
+  // },
 ];
 
 const subjects: SubjectCreateManyInput[] = [
@@ -41,18 +41,18 @@ const subjects: SubjectCreateManyInput[] = [
 ];
 
 const students: StudentCreateManyInput[] = [
-  {
-    name: "student-1",
-    parentId: "",
-  },
-  {
-    name: "student-2",
-    parentId: "",
-  },
-  {
-    name: "student-3",
-    parentId: "",
-  },
+  // {
+  //   name: "student-1",
+  //   parentId: "",
+  // },
+  // {
+  //   name: "student-2",
+  //   parentId: "",
+  // },
+  // {
+  //   name: "student-3",
+  //   parentId: "",
+  // },
 ];
 
 async function seedModel(

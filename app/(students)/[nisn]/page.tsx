@@ -1,8 +1,10 @@
-import { NISN_LENGTH } from "@/schemas/student";
-import { notFound } from "next/navigation";
 import z from "zod";
-import { columns, Enrollments } from "./columns";
+
+import { notFound } from "next/navigation";
+import { NISN_LENGTH } from "@/schemas/student";
 import { DataTable } from "@/components/ui/data-table";
+
+import { columns, Enrollments } from "./columns";
 
 const data: z.infer<typeof Enrollments>[] = [
   {
@@ -32,7 +34,6 @@ export default async function Page({
 
   return (
     <div>
-      this is test {nisn}
       <DataTable columns={columns} data={data} />
     </div>
   );
