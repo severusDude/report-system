@@ -1,12 +1,21 @@
 "use client";
 
 import z from "zod";
+import { Edit, Mars, MoreHorizontal, Trash2, Venus } from "lucide-react";
 
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Gender } from "@/generated/prisma/enums";
-import { Badge } from "@/components/ui/badge";
-import { Mars, Venus } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const Students = z.object({
   id: z.number(),
@@ -17,9 +26,30 @@ export const Students = z.object({
 
 export const columns: ColumnDef<z.infer<typeof Students>>[] = [
   {
-    header: "#",
-    id: "index",
-    cell: ({ row }) => row.index + 1,
+    id: "select",
+    header: ({ table }) => (
+      <div className="text-center w-0">
+        <Checkbox
+          checked={
+            table.getIsAllRowsSelected() ||
+            (table.getIsSomeRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      </div>
+    ),
+    cell: ({ row }) => (
+      <div className="text-center w-0">
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      </div>
+    ),
+    enableSorting: false,
+    enableHiding: false,
   },
   {
     accessorKey: "name",
@@ -27,35 +57,62 @@ export const columns: ColumnDef<z.infer<typeof Students>>[] = [
   },
   {
     accessorKey: "gender",
-    header: "Gender",
+    header: () => <div className="text-center">Gender</div>,
 
     cell: ({ row }) => {
       const isMale = row.original.gender === Gender.MALE;
 
       return (
-        <Badge
-          variant="outline"
-          className={cn(
-            "rounded-md",
-            isMale
-              ? "text-blue-500 bg-blue-50 border-blue-500"
-              : "text-rose-500 bg-rose-50 border-rose-500"
-          )}
-        >
-          <>
-            {isMale ? (
-              <Mars className="mr-1 text-blue-500" />
-            ) : (
-              <Venus className="mr-1" />
+        <div className="text-center">
+          <Badge
+            variant="outline"
+            className={cn(
+              "rounded-md",
+              isMale
+                ? "text-blue-500 bg-blue-50 border-blue-500"
+                : "text-rose-500 bg-rose-50 border-rose-500"
             )}
-            {isMale ? "Male" : "Female"}
-          </>
-        </Badge>
+          >
+            <>
+              {isMale ? (
+                <Mars className="mr-1 text-blue-500" />
+              ) : (
+                <Venus className="mr-1" />
+              )}
+              {isMale ? "Male" : "Female"}
+            </>
+          </Badge>
+        </div>
       );
     },
   },
   {
     accessorKey: "nisn",
     header: "NISN",
+  },
+  {
+    id: "action",
+    cell: () => {
+      return (
+        <div className="text-center w-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem>
+                <Edit className="mr-1" /> Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Trash2 className="mr-1" /> Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      );
+    },
   },
 ];

@@ -1,8 +1,7 @@
-import AuthenticatedLayout from "@/layouts/authenticated-layout";
-import UpsertForm from "@/app/admin/students/(forms)/upsert";
 import studentService from "@/services/students-service";
-import { DataTable } from "@/components/ui/data-table";
-import { columns } from "./columns";
+import AuthenticatedLayout from "@/layouts/authenticated-layout";
+
+import StudentTable from "./table";
 
 export default async function Page() {
   const students = await studentService.getStudents({});
@@ -12,7 +11,8 @@ export default async function Page() {
       <header className="flex w-full justify-between">
         <h1>Students</h1>
       </header>
-      <DataTable columns={columns} data={students.data} />
+
+      <StudentTable data={students.data} name="test" />
 
       {/* <UpsertForm mode="create" /> */}
     </AuthenticatedLayout>

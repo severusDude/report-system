@@ -4,7 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { ResponseData } from "@/types";
 import { StudentUpsertSchema } from "@/schemas/student";
 import { Prisma, Student } from "@/generated/prisma/client";
-import { EnrollmentGetPayload } from "@/generated/prisma/models";
+import {
+  EnrollmentGetPayload,
+  StudentGetPayload,
+} from "@/generated/prisma/models";
 
 class StudentService {
   async getStudents({
@@ -32,6 +35,47 @@ class StudentService {
       message: "Students fetched successfully",
       data: result,
     };
+  }
+
+  async getStudentByNISN({
+    nisn,
+  }: {
+    nisn: string;
+  }): Promise<
+    ResponseData<StudentGetPayload<{ include: { parent: true } }> | null>
+  > {
+    try {
+      const result = await prisma.student.findUnique({
+        where: {
+          nisn: nisn,
+        },
+        include: {
+          parent: true,
+        },
+      });
+
+      if (!result) {
+        return {
+          success: false,
+          message: "Failed to fetch student: Student not found",
+          data: null,
+        };
+      }
+
+      return {
+        success: true,
+        message: "Student fetched successfully",
+        data: result,
+      };
+    } catch (error) {
+      console.log(error);
+
+      return {
+        success: false,
+        message: "Failed to fetch student: Student not found",
+        data: null,
+      };
+    }
   }
 
   async upsertStudent(
