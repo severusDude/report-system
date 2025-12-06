@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+// import Image from "next/image";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
@@ -34,10 +34,6 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-
-const session = await auth.api.getSession({
-  headers: await headers(),
-});
 
 type Data = {
   student: {
@@ -132,7 +128,11 @@ const data: Data = {
   ],
 };
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
   const user = {
     name: session?.user.name ?? "",
     email: session?.user.email ?? "",
