@@ -2,6 +2,7 @@ import z from "zod";
 
 import { prisma } from "@/lib/prisma";
 import { ResponseData } from "@/types";
+import { unstable_cache } from "next/cache";
 import { StudentUpsertSchema } from "@/schemas/student";
 import { Prisma, Student } from "@/generated/prisma/client";
 import {
@@ -10,32 +11,36 @@ import {
 } from "@/generated/prisma/models";
 
 class StudentService {
-  async getStudents({
-    query = "",
-  }: {
-    query?: string;
-  }): Promise<ResponseData<Student[]>> {
-    // If no query is provided, return all students
-    if (!query) {
-      const result = await prisma.student.findMany();
+  getStudents = unstable_cache(
+    async ({
+      query = "",
+    }: {
+      query?: string;
+    }): Promise<ResponseData<Student[]>> => {
+      // If no query is provided, return all students
+      if (!query) {
+        const result = await prisma.student.findMany();
+
+        return {
+          success: true,
+          message: "Students fetched successfully",
+          data: result,
+        };
+      }
+
+      const result = await prisma.student.findMany({
+        where: { name: { contains: query } },
+      });
 
       return {
         success: true,
         message: "Students fetched successfully",
         data: result,
       };
-    }
-
-    const result = await prisma.student.findMany({
-      where: { name: { contains: query } },
-    });
-
-    return {
-      success: true,
-      message: "Students fetched successfully",
-      data: result,
-    };
-  }
+    },
+    ["students"],
+    { tags: ["students"] }
+  );
 
   async getStudentByNISN({
     nisn,
@@ -145,6 +150,24 @@ class StudentService {
         success: true,
         message: "Student created successfully",
         data: result,
+      };
+    }
+  }
+
+  async deleteStudent(nisn: string): Promise<ResponseData<boolean>> {
+    try {
+      await prisma.student.delete({ where: { nisn } });
+      return {
+        success: true,
+        message: "Student deleted successfully",
+        data: true,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        success: false,
+        message: "Failed to delete student",
+        data: false,
       };
     }
   }
