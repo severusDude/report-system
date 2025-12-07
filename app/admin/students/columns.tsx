@@ -1,14 +1,18 @@
 "use client";
 
 import z from "zod";
+import { toast } from "sonner";
 import { Edit, Mars, MoreHorizontal, Trash2, Venus } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Gender } from "@/generated/prisma/enums";
 import { Checkbox } from "@/components/ui/checkbox";
+import { deleteStudent } from "@/actions/students-actions";
+import { useDeleteConfirmation } from "@/components/delete-confirmation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +27,55 @@ export const Students = z.object({
   gender: z.string(),
   nisn: z.string(),
 });
+
+function ActionCell({ student }: { student: z.infer<typeof Students> }) {
+  const deleteConfirmation = useDeleteConfirmation({
+    isSilent: false,
+    title: "Delete Student",
+    description: `Are you sure you want to delete ${student.name}?`,
+    action: async (nisn: string) => {
+      await deleteStudent(nisn);
+    },
+    onSuccess: () => {
+      toast.success(`Student ${student.name} deleted successfully`);
+    },
+    onError: (error: unknown) => {
+      console.log(error);
+
+      toast.error("Failed to delete student");
+    },
+  });
+
+  return (
+    <div className="text-center w-0">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <MoreHorizontal />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem
+            onClick={() => {
+              redirect(`/admin/students/${student.nisn}`);
+            }}
+          >
+            <Edit className="mr-1" /> Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              deleteConfirmation.trigger(student.nisn);
+            }}
+          >
+            <Trash2 className="mr-1" /> Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {deleteConfirmation.dialog}
+    </div>
+  );
+}
 
 export const columns: ColumnDef<z.infer<typeof Students>>[] = [
   {
@@ -92,27 +145,6 @@ export const columns: ColumnDef<z.infer<typeof Students>>[] = [
   },
   {
     id: "action",
-    cell: () => {
-      return (
-        <div className="text-center w-0">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem>
-                <Edit className="mr-1" /> Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Trash2 className="mr-1" /> Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      );
-    },
+    cell: ({ row }) => <ActionCell student={row.original} />,
   },
 ];

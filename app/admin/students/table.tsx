@@ -5,19 +5,13 @@ import { useState } from "react";
 import z from "zod";
 import { SearchIcon } from "lucide-react";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import {
-  ColumnFiltersState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
 import {
   Table,
   TableBody,
@@ -26,6 +20,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  ColumnFiltersState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 
 import { columns, Students } from "./columns";
 
@@ -71,7 +72,9 @@ function StudentTable({
         {/* Actions */}
         <div className="flex space-x-2">
           <Button variant="outline">Export</Button>
-          <Button>Create</Button>
+          <Button>
+            <Link href="/admin/students/new">Create</Link>
+          </Button>
         </div>
       </div>
       <div className="overflow-hidden rounded-md border">
