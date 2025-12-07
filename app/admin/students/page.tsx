@@ -8,13 +8,7 @@ export default async function Page() {
 
   return (
     <AuthenticatedLayout header="Students">
-      <header className="flex w-full justify-between">
-        <h1>Students</h1>
-      </header>
-
-      <StudentTable data={students.data} name="test" />
-
-      {/* <UpsertForm mode="create" /> */}
+      <StudentTable data={students.data} name="Students data" />
     </AuthenticatedLayout>
   );
 }

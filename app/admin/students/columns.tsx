@@ -22,9 +22,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export const Students = z.object({
-  id: z.number(),
+  id: z.string(),
   name: z.string(),
-  gender: z.string(),
+  gender: z.string().or(z.literal(null)),
   nisn: z.string(),
 });
 
