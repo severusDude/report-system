@@ -20,11 +20,14 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
+import { useRouter } from "next/navigation";
 
 export function CreateForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+  const router = useRouter();
+
   const form = useForm<z.input<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: "onChange",
@@ -47,6 +50,7 @@ export function CreateForm({
       }
 
       toast.success(`Subject ${data.name} created successfully`);
+      router.push("/admin/subjects");
     } catch (error) {
       console.log(error);
 
@@ -83,6 +87,7 @@ export function CreateForm({
                 }}
                 aria-invalid={fieldState.invalid}
                 placeholder="Subject name"
+                autoComplete="off"
               />
 
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}

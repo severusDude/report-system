@@ -31,3 +31,17 @@ export async function createSubject(
     return { success: false, message: "Failed to create subject", data: null };
   }
 }
+
+export async function deleteSubject(id: string) {
+  try {
+    const result = await subjectService.deleteSubject(id);
+
+    if (!result) {
+      throw new Error("Failed to delete subject");
+    }
+
+    updateTag("subjects");
+  } catch (error) {
+    console.log(error);
+  }
+}

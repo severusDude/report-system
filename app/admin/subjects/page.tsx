@@ -1,5 +1,12 @@
-import { CreateForm } from "./(forms)/create";
+import subjectService from "@/services/subjects-service";
+import SubjectTable from "./table";
 
-export default function Page() {
-  return <CreateForm></CreateForm>;
+export default async function Page() {
+  const subjects = await subjectService.getSubjects({});
+
+  return (
+    <div>
+      <SubjectTable data={subjects} name="Subjects" />
+    </div>
+  );
 }
