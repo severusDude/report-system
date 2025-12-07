@@ -1,0 +1,255 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  PARENT
+  TEACHER
+  ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum SubjectType {
+  GENERAL
+  ISLAMIC
+}
+
+enum Grade {
+  A_PlUS
+  A
+  B_PLUS
+  B
+  C_PLUS
+  C
+  D
+  E
+  UNSET
+}
+
+enum AttendanceType {
+  PRESENT
+  ABSENT
+  SICK
+  ON_LEAVE
+  UNSET
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime
+  updatedAt     DateTime
+  sessions      Session[]
+  accounts      Account[]
+
+  role Role @default(PARENT)
+
+  students    Student[]
+  teachings   Enrollment[]
+  attachments Attachment[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
+
+model Student {
+  id String @id @default(cuid())
+
+  // Personal data
+  name             String
+  gender           Gender?
+  nisn             String  @unique
+  nik              String?
+  address          String?
+  citizenship      String?
+  familyCardNumber String?
+
+  // Profile data
+  imageUrl String?
+  bio      String?
+
+  // Contacts
+  phoneNumber String?
+  email       String?
+
+  // Birth data
+  birthPlace     String?
+  dateOfBirth    DateTime?
+  birthCertRegNo String?
+
+  hasSpecialNeeds Boolean? @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent   User   @relation(fields: [parentId], references: [id])
+  parentId String
+
+  enrollments Enrollment[]
+  attendances Attendance[]
+  works       Work[]
+}
+
+model Term {
+  id String @id @default(cuid())
+
+  name      String
+  startDate DateTime
+  endDate   DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  enrollments Enrollment[]
+}
+
+model Enrollment {
+  id String @id @default(cuid())
+
+  grade     Grade   @default(UNSET)
+  asessment String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teacher   User    @relation(fields: [teacherId], references: [id])
+  teacherId String
+  term      Term    @relation(fields: [termId], references: [id])
+  termId    String
+  student   Student @relation(fields: [studentId], references: [id])
+  studentId String
+  subject   Subject @relation(fields: [subjectId], references: [id])
+  subjectId String
+
+  attendances Attendance[]
+  works       Work[]
+
+  @@unique([studentId, subjectId])
+}
+
+model Attendance {
+  id String @id @default(cuid())
+
+  type    AttendanceType @default(UNSET)
+  session Int
+  date    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id])
+  enrollmentId String
+  student      Student    @relation(fields: [studentId], references: [id])
+  studentId    String
+
+  @@unique([studentId, enrollmentId, session])
+}
+
+model Subject {
+  id String @id @default(cuid())
+
+  name String
+  type SubjectType @default(GENERAL)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  enrollments Enrollment[]
+}
+
+model Work {
+  id          String  @id @default(cuid())
+  title       String
+  description String?
+  isPublished Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student      Student     @relation(fields: [studentId], references: [id])
+  studentId    String
+  enrollment   Enrollment? @relation(fields: [enrollmentId], references: [id])
+  enrollmentId String?
+
+  attachments Attachment[]
+}
+
+model Attachment {
+  id       String @id @default(cuid())
+  filename String
+  url      String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  uploadedBy String
+  uploader   User   @relation(fields: [uploadedBy], references: [id])
+
+  work   Work?   @relation(fields: [workId], references: [id])
+  workId String?
+}
