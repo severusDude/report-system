@@ -1,109 +1,25 @@
 "use client";
 
 import z from "zod";
-import { toast } from "sonner";
-import { Edit, Mars, MoreHorizontal, Trash2, Venus } from "lucide-react";
+import { Mars, Venus } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Gender } from "@/generated/prisma/enums";
-import { Checkbox } from "@/components/ui/checkbox";
 import { deleteStudent } from "@/actions/students-actions";
-import { useDeleteConfirmation } from "@/components/delete-confirmation";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { ActionCell } from "@/components/ui/data-table/cells/action-cell";
+import { createSelectColumn } from "@/components/ui/data-table/select-column";
 
-export const Students = z.object({
+export const Student = z.object({
   id: z.string(),
   name: z.string(),
   gender: z.string().or(z.literal(null)),
   nisn: z.string(),
 });
 
-function ActionCell({ student }: { student: z.infer<typeof Students> }) {
-  const deleteConfirmation = useDeleteConfirmation({
-    isSilent: false,
-    title: "Delete Student",
-    description: `Are you sure you want to delete ${student.name}?`,
-    action: async (nisn: string) => {
-      await deleteStudent(nisn);
-    },
-    onSuccess: () => {
-      toast.success(`Student ${student.name} deleted successfully`);
-    },
-    onError: (error: unknown) => {
-      console.log(error);
-
-      toast.error("Failed to delete student");
-    },
-  });
-
-  return (
-    <div className="text-center w-0">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon">
-            <MoreHorizontal />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={() => {
-              redirect(`/admin/students/${student.nisn}`);
-            }}
-          >
-            <Edit className="mr-1" /> Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => {
-              deleteConfirmation.trigger(student.nisn);
-            }}
-          >
-            <Trash2 className="mr-1" /> Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      {deleteConfirmation.dialog}
-    </div>
-  );
-}
-
-export const columns: ColumnDef<z.infer<typeof Students>>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <div className="text-center w-0">
-        <Checkbox
-          checked={
-            table.getIsAllRowsSelected() ||
-            (table.getIsSomeRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      </div>
-    ),
-    cell: ({ row }) => (
-      <div className="text-center w-0">
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      </div>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
+export const columns: ColumnDef<z.infer<typeof Student>>[] = [
+  createSelectColumn<z.infer<typeof Student>>(),
   {
     accessorKey: "name",
     header: "Name",
@@ -145,6 +61,18 @@ export const columns: ColumnDef<z.infer<typeof Students>>[] = [
   },
   {
     id: "action",
-    cell: ({ row }) => <ActionCell student={row.original} />,
+    cell: ({ row }) => (
+      <ActionCell
+        item={row.original}
+        itemName={row.original.name}
+        itemIdentifier={row.original.nisn}
+        editHref={`/admin/students/${row.original.nisn}`}
+        onDelete={deleteStudent}
+        deleteTitle="Delete student"
+        deleteDescription={
+          `Are you sure you want to delete ${row.original.name}?` || undefined
+        }
+      />
+    ),
   },
 ];

@@ -42,7 +42,7 @@ export async function saveStudent(
   }
 }
 
-export async function deleteStudent(nisn: string): Promise<ResponseData<null>> {
+export async function deleteStudent(nisn: string) {
   try {
     const result = await studentService.deleteStudent(nisn);
 
@@ -51,24 +51,7 @@ export async function deleteStudent(nisn: string): Promise<ResponseData<null>> {
     }
 
     updateTag("students");
-
-    return {
-      success: true,
-      message: "Student deleted successfully",
-      data: null,
-    };
   } catch (error) {
-    console.log("Failed to delete student: ", error);
-
-    let errorMessage = "Failed to delete student due to server error";
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-
-    return {
-      success: false,
-      message: errorMessage,
-      data: null,
-    };
+    console.log("Failed to delete student due to server error: ", error);
   }
 }
