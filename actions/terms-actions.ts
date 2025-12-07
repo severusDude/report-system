@@ -36,3 +36,17 @@ export async function createTerm(
     return { success: false, message: errorMessage, data: null };
   }
 }
+
+export async function deleteTerm(id: string) {
+  try {
+    const result = await termService.deleteTerm(id);
+
+    if (!result) {
+      throw new Error("Failed to delete term");
+    }
+
+    updateTag("terms");
+  } catch (error) {
+    console.log(error);
+  }
+}
