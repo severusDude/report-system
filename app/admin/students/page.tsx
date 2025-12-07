@@ -1,13 +1,9 @@
-import AuthenticatedLayout from "@/layouts/authenticated-layout";
-import UpsertForm from "@/app/admin/students/(forms)/upsert";
+import studentService from "@/services/students-service";
 
-export default function Page() {
-  return (
-    <AuthenticatedLayout header="Students">
-      <header className="flex w-full justify-between">
-        <h1>Students</h1>
-      </header>
-      <UpsertForm mode="create" />
-    </AuthenticatedLayout>
-  );
+import StudentTable from "./table";
+
+export default async function Page() {
+  const students = await studentService.getStudents({});
+
+  return <StudentTable data={students.data} name="Students data" />;
 }

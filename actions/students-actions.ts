@@ -3,6 +3,7 @@
 import z from "zod";
 
 import { ResponseData } from "@/types";
+import { updateTag } from "next/cache";
 import { Student } from "@/generated/prisma/client";
 import { StudentUpsertSchema } from "@/schemas/student";
 import studentService from "@/services/students-service";
@@ -18,6 +19,8 @@ export async function saveStudent(
       throw new Error(result.message || "Failed to create student");
     }
 
+    updateTag("students");
+
     return {
       success: true,
       message: "Student created successfully",
@@ -27,6 +30,37 @@ export async function saveStudent(
     console.log("Failed to create student: ", error);
 
     let errorMessage = "Failed to create student due to server error";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+
+    return {
+      success: false,
+      message: errorMessage,
+      data: null,
+    };
+  }
+}
+
+export async function deleteStudent(nisn: string): Promise<ResponseData<null>> {
+  try {
+    const result = await studentService.deleteStudent(nisn);
+
+    if (!result.success) {
+      throw new Error(result.message || "Failed to delete student");
+    }
+
+    updateTag("students");
+
+    return {
+      success: true,
+      message: "Student deleted successfully",
+      data: null,
+    };
+  } catch (error) {
+    console.log("Failed to delete student: ", error);
+
+    let errorMessage = "Failed to delete student due to server error";
     if (error instanceof Error) {
       errorMessage = error.message;
     }

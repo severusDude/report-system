@@ -1,11 +1,3 @@
-import AuthenticatedLayout from "@/layouts/authenticated-layout";
-
-function Page() {
-  return (
-    <AuthenticatedLayout header="Student Overview">
-      <h1>Student Overview</h1>
-    </AuthenticatedLayout>
-  );
+export default function Page() {
+  return <h1>Student Overview</h1>;
 }
-
-export default Page;
