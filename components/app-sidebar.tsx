@@ -1,5 +1,14 @@
 import * as React from "react";
 
+import {
+  CalendarCog,
+  CheckSquare,
+  ClipboardCheck,
+  FileText,
+  FlaskConical,
+  UserIcon,
+} from "lucide-react";
+
 import Link from "next/link";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -28,30 +37,34 @@ const data = {
       url: "#",
       items: [
         {
-          title: "Students",
-          url: "/admin/students",
+          title: "Enrollments",
+          url: "/admin/enrollments",
+          icon: CheckSquare,
+        },
+        {
+          title: "Terms",
+          url: "/admin/terms",
+          icon: CalendarCog,
+        },
+        {
+          title: "Attendances",
+          url: "/admin/attendances",
+          icon: ClipboardCheck,
         },
         {
           title: "Subjects",
           url: "/admin/subjects",
+          icon: FlaskConical,
         },
         {
           title: "Works",
           url: "/admin/works",
-        },
-      ],
-    },
-    {
-      title: "Getting Started",
-      url: "#",
-      items: [
-        {
-          title: "Installation",
-          url: "#",
+          icon: FileText,
         },
         {
-          title: "Project Structure",
-          url: "#",
+          title: "Students",
+          url: "/admin/students",
+          icon: UserIcon,
         },
       ],
     },
@@ -75,7 +88,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 {item.items.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
-                      <Link href={item.url}>{item.title}</Link>
+                      <Link href={item.url}>
+                        {item.icon && <item.icon className="mr-2 size-4" />}{" "}
+                        {item.title}
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
