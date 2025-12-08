@@ -1,8 +1,56 @@
 "use server";
 
-import { Role, User } from "@/generated/prisma/client";
-import userService from "@/services/users-service";
 import { ResponseData } from "@/types";
+import { updateTag } from "next/cache";
+import { User as AuthUser } from "@/lib/auth";
+import userService from "@/services/users-service";
+import { Role, User } from "@/generated/prisma/client";
+
+export async function createUser({
+  email,
+  password,
+  name,
+  role,
+}: {
+  email: string;
+  password: string;
+  name: string;
+  role: Role;
+}): Promise<ResponseData<AuthUser | null>> {
+  try {
+    const result = await userService.createUser({
+      email,
+      password,
+      name,
+      role,
+    });
+
+    if (!result) {
+      throw new Error("Failed to create user");
+    }
+
+    updateTag("users");
+
+    return {
+      success: true,
+      message: "User created successfully",
+      data: result.data,
+    };
+  } catch (error) {
+    console.log(error);
+
+    let errorMessage = "Failed to create user due to server error";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+
+    return {
+      success: false,
+      message: errorMessage,
+      data: null,
+    };
+  }
+}
 
 export async function searchParents({
   query = "",
