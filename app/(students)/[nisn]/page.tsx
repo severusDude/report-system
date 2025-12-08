@@ -1,15 +1,21 @@
 import { Pencil } from "lucide-react";
 
+import { auth } from "@/lib/auth";
+import { updateTag } from "next/cache";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getImageProps } from "next/image";
 import { NISN_LENGTH } from "@/schemas/student";
 import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/ui/data-table";
 import studentService from "@/services/students-service";
 import { Card, CardContent } from "@/components/ui/card";
+import { ActionButton } from "@/components/action-button";
+import enrollmentService from "@/services/enrollments-service";
+import { AttendanceType, Role } from "@/generated/prisma/enums";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DataTable } from "@/components/ui/data-table";
+
 import { columns, EnrollmentTableData } from "./columns";
-import { AttendanceType } from "@/generated/prisma/enums";
 
 export default async function Page({
   params,
@@ -21,6 +27,10 @@ export default async function Page({
   if (isNaN(Number(nisn)) || nisn.length !== NISN_LENGTH) {
     return notFound();
   }
+
+  const session = await auth.api.getSession({ headers: await headers() });
+
+  console.log(session);
 
   // Fetch student
   const result = await studentService.getStudentByNISN({ nisn: nisn });
@@ -42,6 +52,28 @@ export default async function Page({
     width: 40,
     height: 40,
   });
+
+  async function initEnrollments() {
+    "use server";
+
+    if (!session) {
+      console.log("Your are not authenticated.");
+    }
+
+    if (session && session.user.role !== Role.ADMIN) {
+      console.log("You are not authorized to perform this action.");
+    }
+
+    await enrollmentService.createEnrollment({
+      studentId: student.id,
+      subject: true,
+      attendanceCount: 16,
+    });
+
+    updateTag("enrollments");
+
+    console.log("Enrollments created successfully");
+  }
 
   // Transform data for the table
   const tableData: EnrollmentTableData[] =
@@ -68,8 +100,6 @@ export default async function Page({
         grade: enrollment.grade,
       };
     }) ?? [];
-
-  console.log(enrollmentResult);
 
   return (
     <div className="max-w-screen w-screen p-8 overflow-x-hidden">
@@ -186,7 +216,12 @@ export default async function Page({
             </CardContent>
           </Card>
         </div>
-        <div className="flex w-[50vw] flex-1">
+        <div className="flex flex-col w-[80vw] flex-1 gap-2">
+          <ActionButton
+            action={initEnrollments}
+            disabled={!session || session.user.role !== Role.ADMIN}
+            className="self-end"
+          />
           <DataTable columns={columns} data={tableData} />
         </div>
       </div>

@@ -3,16 +3,18 @@ import { ResponseData } from "@/types";
 import userService from "@/services/users-service";
 import { Enrollment } from "@/generated/prisma/client";
 
+export type CreateEnrollments = {
+  studentId: string;
+  subject: boolean | string[];
+  attendanceCount?: number;
+};
+
 class EnrollmentService {
   async createEnrollment({
     studentId,
     subject,
     attendanceCount = 12, // default to 12 sessions
-  }: {
-    studentId: string;
-    subject: boolean | string[];
-    attendanceCount?: number;
-  }): Promise<ResponseData<Enrollment[]>> {
+  }: CreateEnrollments): Promise<ResponseData<Enrollment[]>> {
     try {
       // Step 1: Resolve subjects based on input
       let subjects;
