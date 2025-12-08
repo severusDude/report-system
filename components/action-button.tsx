@@ -16,7 +16,11 @@ export function ActionButton({
   };
 
   return (
-    <Button {...props} onClick={handleClick} disabled={isPending}>
+    <Button
+      {...props}
+      onClick={handleClick}
+      disabled={isPending || props.disabled}
+    >
       {isPending ? "Creating..." : "Create"}
     </Button>
   );
