@@ -2,13 +2,13 @@
 
 import z from "zod";
 
+import { capitalize, cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Role } from "@/generated/prisma/enums";
 import { ColumnDef } from "@tanstack/react-table";
 import { deleteUser } from "@/actions/users-actions";
 import { ActionCell } from "@/components/ui/data-table/cells/action-cell";
 import { createSelectColumn } from "@/components/ui/data-table/select-column";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { Role } from "@/generated/prisma/enums";
 
 export const User = z.object({
   id: z.string(),
@@ -46,14 +46,9 @@ export const columns: ColumnDef<z.infer<typeof User>>[] = [
           "text-yellow-500 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900 border-yellow-500 dark:border-yellow-400"
       );
 
-      // Turn to title case
-      const roleTitleCase =
-        row.original.role.toLowerCase().charAt(0).toUpperCase() +
-        row.original.role.toLowerCase().slice(1);
-
       return (
         <Badge variant="outline" className={cn("select-none", className)}>
-          {roleTitleCase}
+          {capitalize(role)}
         </Badge>
       );
     },
