@@ -30,8 +30,6 @@ export default async function Page({
 
   const session = await auth.api.getSession({ headers: await headers() });
 
-  console.log(session);
-
   // Fetch student
   const result = await studentService.getStudentByNISN({ nisn: nisn });
   if (!result.success) return notFound();
