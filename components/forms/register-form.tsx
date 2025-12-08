@@ -86,7 +86,7 @@ function RegisterForm({ className, ...props }: React.ComponentProps<"form">) {
       }
 
       toast.success(`User ${data.name} created successfully`);
-      router.push("/auth/login");
+      router.push("/sign-in");
     } catch (error) {
       console.error("Failed to create user: ", error);
 
@@ -244,7 +244,7 @@ function RegisterForm({ className, ...props }: React.ComponentProps<"form">) {
         <p className="mt-4 text-sm text-center text-muted-foreground">
           Already have an account?{" "}
           <Link
-            href="/auth/login"
+            href="/sign-in"
             className="underline underline-offset-4 hover:text-primary"
           >
             Log in

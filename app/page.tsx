@@ -83,7 +83,7 @@ export default async function Home() {
               />
             ) : (
               <Link
-                href="/auth/login"
+                href="/sign-in"
                 className="rounded-md bg-pink-400 px-3 py-1 text-sm font-semibold text-white"
               >
                 Login
