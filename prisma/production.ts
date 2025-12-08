@@ -3,8 +3,8 @@ import "dotenv/config";
 
 import { auth } from "@/lib/auth";
 import { subjects } from "@/prisma/data";
-import { seedModel } from "@/prisma/helper";
 import { PrismaClient, Role } from "@/generated/prisma/client";
+import { seedModel, seedStudentsEnhanced } from "@/prisma/helper";
 
 export async function seedProduction(prisma: PrismaClient) {
   console.log("Seeding production data...");
@@ -35,6 +35,11 @@ export async function seedProduction(prisma: PrismaClient) {
   console.log("Seeding subjects...");
   await seedModel(prisma, "subject", subjects, "name");
   console.log("Subjects seeded successfully");
+
+  // Seed students
+  console.log("Seeding students...");
+  await seedStudentsEnhanced(prisma, 10);
+  console.log("Students seeded successfully");
 
   console.log("Production seeding complete");
 
