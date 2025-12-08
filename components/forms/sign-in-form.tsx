@@ -32,7 +32,7 @@ const formSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-function LoginForm({ className, ...props }: React.ComponentProps<"form">) {
+function SignInForm({ className, ...props }: React.ComponentProps<"form">) {
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -162,4 +162,4 @@ function LoginForm({ className, ...props }: React.ComponentProps<"form">) {
   );
 }
 
-export default LoginForm;
+export default SignInForm;

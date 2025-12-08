@@ -52,7 +52,7 @@ const formSchema = z
     path: ["password2"],
   });
 
-function RegisterForm({ className, ...props }: React.ComponentProps<"form">) {
+function SignUpForm({ className, ...props }: React.ComponentProps<"form">) {
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -257,4 +257,4 @@ function RegisterForm({ className, ...props }: React.ComponentProps<"form">) {
   );
 }
 
-export default RegisterForm;
+export default SignUpForm;

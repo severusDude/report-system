@@ -1,5 +1,5 @@
-import LoginForm from "@/components/forms/login-form";
+import SignInForm from "@/components/forms/sign-in-form";
 
 export default async function Page() {
-  return <LoginForm className="w-full max-w-xs" />;
+  return <SignInForm className="w-full max-w-xs" />;
 }
