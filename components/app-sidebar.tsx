@@ -141,6 +141,9 @@ export async function AppSidebar({
       <SidebarFooter>
         <NavUser
           user={{ name: user.name, email: user.email, avatar: "/user.svg" }}
+          isSidebar={true}
+          align="start"
+          side="right"
         />
       </SidebarFooter>
       <SidebarRail />
