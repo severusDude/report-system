@@ -98,7 +98,7 @@ export async function AppSidebar({
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) {
-    redirect("/auth/login");
+    redirect("/sign-in");
   }
 
   const user = session?.user;

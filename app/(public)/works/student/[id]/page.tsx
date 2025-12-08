@@ -23,15 +23,18 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 // Data works (sama dengan di parent page)
-const worksData: Record<number, {
-  id: number;
-  image: string;
-  title: string;
-  rating: number;
-  date: string;
-  pembina: string;
-  deskripsi: string;
-}> = {
+const worksData: Record<
+  number,
+  {
+    id: number;
+    image: string;
+    title: string;
+    rating: number;
+    date: string;
+    pembina: string;
+    deskripsi: string;
+  }
+> = {
   1: {
     id: 1,
     image: "/karya1.png",
@@ -39,7 +42,8 @@ const worksData: Record<number, {
     rating: 3,
     date: "12-05-2025",
     pembina: "Ustadz Hasan",
-    deskripsi: "Untuk melatih kreativitas Ananda dalam hal Seni, kami memberikan tugas untuk membuat kaligrafi bebas bla bla bla bla bla bla bla bla bla, hasil kaligrafi buatan Ananda sangat bagus bla bla bla bla bla."
+    deskripsi:
+      "Untuk melatih kreativitas Ananda dalam hal Seni, kami memberikan tugas untuk membuat kaligrafi bebas bla bla bla bla bla bla bla bla bla, hasil kaligrafi buatan Ananda sangat bagus bla bla bla bla bla.",
   },
   2: {
     id: 2,
@@ -48,7 +52,8 @@ const worksData: Record<number, {
     rating: 4,
     date: "10-05-2025",
     pembina: "Ustadzah Siti",
-    deskripsi: "Karya seni ini menunjukkan kemampuan Ananda dalam menggambar dan mewarnai. Hasilnya sangat memuaskan dan menunjukkan perkembangan yang baik."
+    deskripsi:
+      "Karya seni ini menunjukkan kemampuan Ananda dalam menggambar dan mewarnai. Hasilnya sangat memuaskan dan menunjukkan perkembangan yang baik.",
   },
   3: {
     id: 3,
@@ -57,8 +62,9 @@ const worksData: Record<number, {
     rating: 5,
     date: "08-05-2025",
     pembina: "Ustadz Ahmad",
-    deskripsi: "Proyek kreatif ini menunjukkan inovasi dan kreativitas Ananda dalam membuat karya yang bermanfaat dan menarik."
-  }
+    deskripsi:
+      "Proyek kreatif ini menunjukkan inovasi dan kreativitas Ananda dalam membuat karya yang bermanfaat dan menarik.",
+  },
 };
 
 export default function WorkDetail() {
@@ -78,34 +84,64 @@ export default function WorkDetail() {
   return (
     <div className="min-h-screen font-sans leading-relaxed relative">
       {/* Background Image */}
-      <div 
+      <div
         className="fixed inset-0 z-0"
         style={{
-          backgroundImage: 'url(/bg.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
+          backgroundImage: "url(/bg.png)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
         }}
       />
       {/* Overlay gradient */}
       <div className="fixed inset-0 z-0 bg-gradient-to-b from-pink-50/80 to-[#5BB29D]/80" />
-      
+
       {/* Content */}
       <div className="relative z-10">
         {/* Header */}
         <header className="sticky top-0 z-30 bg-white/30 backdrop-blur-sm">
           <div className="mx-auto relative flex max-w-7xl items-center justify-between gap-4 px-6 py-4">
             <div className="flex items-center gap-3">
-              <Image src="/logo-ibnu-siena.png" alt="Ibnu Siena Mulia logo" width={160} height={40} className="object-contain" priority unoptimized />
+              <Image
+                src="/logo-ibnu-siena.png"
+                alt="Ibnu Siena Mulia logo"
+                width={160}
+                height={40}
+                className="object-contain"
+                priority
+                unoptimized
+              />
             </div>
             <nav className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center gap-6">
-              <Link href="/" className="text-sm font-medium text-zinc-700">Home</Link>
-              <Link href="/overview" className="text-sm font-medium text-zinc-700">Overview</Link>
-              <Link href="/works" className="text-sm font-medium text-[#5BB29D]">Works</Link>
-              <Link href="/report" className="text-sm font-medium text-zinc-700">Report</Link>
+              <Link href="/" className="text-sm font-medium text-zinc-700">
+                Home
+              </Link>
+              <Link
+                href="/overview"
+                className="text-sm font-medium text-zinc-700"
+              >
+                Overview
+              </Link>
+              <Link
+                href="/works"
+                className="text-sm font-medium text-[#5BB29D]"
+              >
+                Works
+              </Link>
+              <Link
+                href="/report"
+                className="text-sm font-medium text-zinc-700"
+              >
+                Report
+              </Link>
             </nav>
             <div className="flex items-center gap-3">
-              <Link href="/auth/login" className="rounded-md bg-pink-400 px-3 py-1 text-sm font-semibold text-white">Login</Link>
+              <Link
+                href="/sign-in"
+                className="rounded-md bg-pink-400 px-3 py-1 text-sm font-semibold text-white"
+              >
+                Login
+              </Link>
             </div>
           </div>
         </header>
@@ -118,24 +154,28 @@ export default function WorkDetail() {
               {/* Profile Picture */}
               <div className="flex justify-center mb-4">
                 <div className="h-32 w-32 rounded-full border-2 border-white overflow-hidden bg-white shadow-lg">
-                  <Image 
-                    src="/profile-student.png" 
-                    alt="Profile" 
-                    width={128} 
-                    height={128} 
-                    className="object-cover w-full h-full" 
-                    unoptimized 
+                  <Image
+                    src="/profile-student.png"
+                    alt="Profile"
+                    width={128}
+                    height={128}
+                    className="object-cover w-full h-full"
+                    unoptimized
                   />
                 </div>
               </div>
 
               {/* Name */}
-              <h2 className={`${inter.className} text-center text-xl font-bold mb-2`}>
+              <h2
+                className={`${inter.className} text-center text-xl font-bold mb-2`}
+              >
                 Mochammad Sakha Makarim
               </h2>
 
               {/* Location and DOB */}
-              <p className="text-center text-sm mb-6">Jakarta, 13 November 2019</p>
+              <p className="text-center text-sm mb-6">
+                Jakarta, 13 November 2019
+              </p>
 
               {/* Contact Info */}
               <div className="space-y-2 text-sm">
@@ -153,20 +193,22 @@ export default function WorkDetail() {
               {/* Work Image */}
               <div className="mb-6">
                 <div className="w-full h-64 md:h-96 rounded-lg overflow-hidden">
-                  <Image 
-                    src={work.image} 
-                    alt={work.title} 
-                    width={800} 
-                    height={600} 
-                    className="object-cover w-full h-full" 
-                    unoptimized 
+                  <Image
+                    src={work.image}
+                    alt={work.title}
+                    width={800}
+                    height={600}
+                    className="object-cover w-full h-full"
+                    unoptimized
                   />
                 </div>
               </div>
 
               {/* Work Details */}
               <div className="space-y-4">
-                <h2 className={`${inter.className} text-3xl font-bold text-zinc-800`}>
+                <h2
+                  className={`${inter.className} text-3xl font-bold text-zinc-800`}
+                >
                   {work.title}
                 </h2>
 
@@ -177,13 +219,20 @@ export default function WorkDetail() {
 
                 {/* Pembina and Date */}
                 <div className="space-y-2 text-gray-700">
-                  <p><span className="font-semibold">Pembina:</span> {work.pembina}</p>
-                  <p><span className="font-semibold">Tanggal:</span> {work.date}</p>
+                  <p>
+                    <span className="font-semibold">Pembina:</span>{" "}
+                    {work.pembina}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Tanggal:</span> {work.date}
+                  </p>
                 </div>
 
                 {/* Description */}
                 <div className="mt-6">
-                  <h3 className={`${inter.className} text-[#5BB29D] text-lg font-bold mb-3`}>
+                  <h3
+                    className={`${inter.className} text-[#5BB29D] text-lg font-bold mb-3`}
+                  >
                     Deskripsi:
                   </h3>
                   <p className="text-gray-700 leading-relaxed">
@@ -193,7 +242,7 @@ export default function WorkDetail() {
 
                 {/* Close Button */}
                 <div className="flex justify-end mt-8">
-                  <Link 
+                  <Link
                     href="/works/student"
                     className="bg-pink-400 hover:bg-pink-500 text-white font-semibold py-3 px-8 rounded-lg transition-colors"
                   >
@@ -208,4 +257,3 @@ export default function WorkDetail() {
     </div>
   );
 }
-
