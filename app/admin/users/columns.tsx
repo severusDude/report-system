@@ -1,13 +1,14 @@
 "use client";
 
 import z from "zod";
+import { Edit2 } from "lucide-react";
 
+import Link from "next/link";
 import { capitalize, cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Role } from "@/generated/prisma/enums";
+import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { deleteUser } from "@/actions/users-actions";
-import { ActionCell } from "@/components/ui/data-table/cells/action-cell";
 import { createSelectColumn } from "@/components/ui/data-table/select-column";
 
 export const User = z.object({
@@ -56,17 +57,13 @@ export const columns: ColumnDef<z.infer<typeof User>>[] = [
   {
     id: "action",
     cell: ({ row }) => (
-      <ActionCell
-        item={row.original}
-        itemName={row.original.name}
-        itemIdentifier={row.original.id}
-        editHref={`/admin/users/${row.original.id}`}
-        onDelete={deleteUser}
-        deleteTitle="Delete User"
-        deleteDescription={
-          `Are you sure you want to delete ${row.original.name}?` || undefined
-        }
-      />
+      <div className="flex gap-2 w-0">
+        <Button variant="outline" size="icon-sm" asChild>
+          <Link href={`/admin/users/${row.original.id}`}>
+            <Edit2 className="h-4 w-4" />
+          </Link>
+        </Button>
+      </div>
     ),
   },
 ];
