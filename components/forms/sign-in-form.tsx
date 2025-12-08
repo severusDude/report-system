@@ -25,7 +25,8 @@ import {
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "../ui/input-group";
+} from "@/components/ui/input-group";
+import { authClient } from "@/lib/auth-client";
 
 const formSchema = z.object({
   email: z.email().min(1, "Email is required"),
@@ -33,6 +34,7 @@ const formSchema = z.object({
 });
 
 function SignInForm({ className, ...props }: React.ComponentProps<"form">) {
+  const { refetch } = authClient.useSession();
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -60,7 +62,8 @@ function SignInForm({ className, ...props }: React.ComponentProps<"form">) {
         throw new Error(result.message || "Failed to login");
       }
 
-      router.push("/admin");
+      router.push("/");
+      refetch();
     } catch (error) {
       console.error("Failed to login: ", error);
 

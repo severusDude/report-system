@@ -2,21 +2,19 @@
 
 import { toast } from "sonner";
 import {
+  BadgeCheck,
   BoxIcon,
   ChevronsUpDown,
   HomeIcon,
   LogOut,
-  UserRoundPenIcon,
 } from "lucide-react";
 
 import Link from "next/link";
+import { Session, User } from "@/lib/auth";
 import { getImageProps } from "next/image";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/services/auth-service";
-import { ImgProps } from "next/dist/shared/lib/get-img-props";
-import { DropdownMenuContentProps } from "@radix-ui/react-dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   SidebarMenu,
@@ -33,126 +31,43 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DropdownMenuContentProps } from "@radix-ui/react-dropdown-menu";
+import { Role } from "@/generated/prisma/enums";
+import { authClient } from "@/lib/auth-client";
 
-// Separate component for sidebar version to isolate the useSidebar hook
-function NavUserSidebar({
-  user,
-  props,
-  handleSignOut,
-  align,
-  side,
-}: {
-  user: { name: string; email: string };
-  props: ImgProps;
+interface NavUserProps {
+  user: User;
+  imageProps: ReturnType<typeof getImageProps>["props"];
   handleSignOut: () => void;
-  align?: DropdownMenuContentProps["align"];
-  side?: DropdownMenuContentProps["side"];
-}) {
-  const { isMobile } = useSidebar();
-
-  return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage {...props} />
-                <AvatarFallback className="rounded-lg">LF</AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
-              </div>
-              <ChevronsUpDown className="ml-auto size-4" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
-          <NavUserDropdown
-            user={user}
-            props={props}
-            handleSignOut={handleSignOut}
-            isMobile={isMobile}
-            align={align}
-            side={side}
-          />
-        </DropdownMenu>
-      </SidebarMenuItem>
-    </SidebarMenu>
-  );
-}
-
-// Separate component for navbar version
-function NavUserStandalone({
-  user,
-  props,
-  handleSignOut,
-  align,
-  side,
-}: {
-  user: { name: string; email: string };
-  props: ImgProps;
-  handleSignOut: () => void;
-  align?: DropdownMenuContentProps["align"];
-  side?: DropdownMenuContentProps["side"];
-}) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="flex items-center gap-2 px-2">
-          <Avatar className="h-8 w-8 rounded-lg">
-            <AvatarImage {...props} />
-            <AvatarFallback className="rounded-lg">LF</AvatarFallback>
-          </Avatar>
-          <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-medium">{user.name}</span>
-            <span className="truncate text-xs">{user.email}</span>
-          </div>
-          <ChevronsUpDown className="ml-auto size-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <NavUserDropdown
-        user={user}
-        props={props}
-        handleSignOut={handleSignOut}
-        isMobile={false}
-        align={align}
-        side={side}
-      />
-    </DropdownMenu>
-  );
+  onNavigate?: () => void;
 }
 
 // Shared dropdown menu component
 function NavUserDropdown({
   user,
-  props,
+  imageProps,
   handleSignOut,
   isMobile,
-  align,
-  side,
-}: {
-  user: { name: string; email: string };
-  props: ImgProps;
-  handleSignOut: () => void;
-  isMobile: boolean;
-  align?: DropdownMenuContentProps["align"];
-  side?: DropdownMenuContentProps["side"];
-}) {
+  onNavigate,
+  ...props
+}: NavUserProps & { isMobile: boolean } & DropdownMenuContentProps) {
+  const showAdminLink = user.role === Role.ADMIN || user.role === Role.TEACHER;
+
   return (
     <DropdownMenuContent
       className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-      side={isMobile ? "bottom" : side}
-      align={align}
+      side={isMobile ? "bottom" : "right"}
+      align="end"
       sideOffset={4}
+      {...props}
     >
       <DropdownMenuLabel className="p-0 font-normal">
         <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
           <Avatar className="h-8 w-8 rounded-lg">
-            <AvatarImage {...props} />
-            <AvatarFallback className="rounded-lg">LF</AvatarFallback>
+            <AvatarImage {...imageProps} />
+            <AvatarFallback className="rounded-lg">
+              {user.name?.[0]?.toUpperCase() ?? "U"}
+            </AvatarFallback>
           </Avatar>
           <div className="grid flex-1 text-left text-sm leading-tight">
             <span className="truncate font-medium">{user.name}</span>
@@ -163,23 +78,25 @@ function NavUserDropdown({
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
         <DropdownMenuItem asChild>
-          <Link href="/">
+          <Link href="/" onClick={onNavigate}>
             <HomeIcon />
             Home
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/admin">
-            <BoxIcon />
-            Console
-          </Link>
-        </DropdownMenuItem>
+        {showAdminLink && (
+          <DropdownMenuItem asChild>
+            <Link href="/admin" onClick={onNavigate}>
+              <BoxIcon />
+              Administration
+            </Link>
+          </DropdownMenuItem>
+        )}
       </DropdownMenuGroup>
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
         <DropdownMenuItem asChild>
-          <Link href="/profile">
-            <UserRoundPenIcon />
+          <Link href="/profile" onClick={onNavigate}>
+            <BadgeCheck />
             Account
           </Link>
         </DropdownMenuItem>
@@ -193,34 +110,109 @@ function NavUserDropdown({
   );
 }
 
-export function NavUser({
+// Sidebar version
+function NavUserSidebar({
   user,
-  align = "start",
-  side = "right",
+  imageProps,
+  handleSignOut,
+  props,
+}: NavUserProps & { props?: DropdownMenuContentProps }) {
+  const { isMobile } = useSidebar();
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            >
+              <Avatar className="h-8 w-8 rounded-lg">
+                <AvatarImage {...imageProps} />
+                <AvatarFallback className="rounded-lg">
+                  {user.name?.[0]?.toUpperCase() ?? "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-medium">{user.name}</span>
+                <span className="truncate text-xs">{user.email}</span>
+              </div>
+              <ChevronsUpDown className="ml-auto size-4" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <NavUserDropdown
+            user={user}
+            imageProps={imageProps}
+            handleSignOut={handleSignOut}
+            isMobile={isMobile}
+            {...props}
+          />
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  );
+}
+
+// Navbar version
+function NavUserStandalone({
+  user,
+  imageProps,
+  handleSignOut,
+  props,
+}: NavUserProps & { props?: DropdownMenuContentProps }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="flex items-center gap-2 px-2">
+          <Avatar className="h-8 w-8 rounded-lg">
+            <AvatarImage {...imageProps} />
+            <AvatarFallback className="rounded-lg">
+              {user.name?.[0]?.toUpperCase() ?? "U"}
+            </AvatarFallback>
+          </Avatar>
+          <div className="grid flex-1 text-left text-sm leading-tight">
+            <span className="truncate font-medium">{user.name}</span>
+            <span className="truncate text-xs">{user.email}</span>
+          </div>
+          <ChevronsUpDown className="ml-auto size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <NavUserDropdown
+        user={user}
+        imageProps={imageProps}
+        handleSignOut={handleSignOut}
+        isMobile={false}
+        {...props}
+      />
+    </DropdownMenu>
+  );
+}
+
+export function NavUser({
+  session,
   isSidebar = true,
+  props,
+  onNavigate,
 }: {
-  user: {
-    name: string;
-    email: string;
-    avatar: string;
-  };
-  align?: DropdownMenuContentProps["align"];
-  side?: DropdownMenuContentProps["side"];
+  session: Session;
   isSidebar?: boolean;
+  props?: DropdownMenuContentProps;
+  onNavigate?: () => void;
 }) {
-  const { data: session } = authClient.useSession();
+  const { refetch } = authClient.useSession();
   const router = useRouter();
 
-  const { props } = getImageProps({
-    src: user.avatar || "/user.svg",
+  const imageProps = getImageProps({
+    src: session.user.image ?? "/user.svg",
     alt: "user-avatar",
     width: 40,
     height: 40,
-  });
+  }).props;
 
   async function handleSignOut() {
     try {
-      if (!session) {
+      if (!session.session) {
         console.warn("Unable to get session or user is not signed in");
         return;
       }
@@ -232,39 +224,27 @@ export function NavUser({
       }
 
       toast.success("Signed out successfully");
+      refetch();
       router.push("/");
     } catch (error) {
-      let errorMessage = "Failed to sign out";
-      console.error(`${errorMessage}: `, error);
-
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to sign out";
+      console.error("Sign out error:", error);
       toast.error(errorMessage);
     }
   }
 
-  // Return the appropriate component based on context
-  if (isSidebar) {
-    return (
-      <NavUserSidebar
-        user={user}
-        props={props}
-        handleSignOut={handleSignOut}
-        align={align}
-        side={side}
-      />
-    );
-  }
+  const componentProps = {
+    user: session.user,
+    imageProps,
+    handleSignOut,
+    props,
+    onNavigate,
+  };
 
-  return (
-    <NavUserStandalone
-      user={user}
-      props={props}
-      handleSignOut={handleSignOut}
-      align={align}
-      side={side}
-    />
+  return isSidebar ? (
+    <NavUserSidebar {...componentProps} />
+  ) : (
+    <NavUserStandalone {...componentProps} />
   );
 }

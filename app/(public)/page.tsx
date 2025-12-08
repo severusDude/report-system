@@ -1,9 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { Inter } from "next/font/google";
-import { NavUser } from "@/components/nav-user";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -38,62 +35,8 @@ function IconCard({ src, label }: { src: string; label: string }) {
 }
 
 export default async function Home() {
-  const session = await auth.api.getSession({ headers: await headers() });
-
   return (
     <div className="min-h-screen font-sans leading-relaxed">
-      {/* Header */}
-      <header className="sticky top-0 z-30 bg-white/30 backdrop-blur-sm">
-        <div className="mx-auto relative flex max-w-7xl items-center justify-between gap-4 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <Image
-              src="/logo-ibnu-siena.png"
-              alt="Ibnu Siena Mulia logo"
-              width={160}
-              height={40}
-              className="object-contain"
-              priority
-              unoptimized
-            />
-          </div>
-          <nav className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center gap-6">
-            <Link href="/" className="text-sm font-medium text-[#5BB29D]">
-              Home
-            </Link>
-            <Link
-              href="/overview"
-              className="text-sm font-medium text-zinc-700"
-            >
-              Overview
-            </Link>
-            <Link href="/works" className="text-sm font-medium text-zinc-700">
-              Works
-            </Link>
-            <Link href="/report" className="text-sm font-medium text-zinc-700">
-              Report
-            </Link>
-          </nav>
-          <div className="flex items-center gap-3">
-            {session?.user ? (
-              <NavUser
-                user={{ ...session.user, avatar: "/user.svg" }}
-                isSidebar={false}
-                align="end"
-                side="bottom"
-              />
-            ) : (
-              <Link
-                href="/sign-in"
-                className="rounded-md bg-pink-400 px-3 py-1 text-sm font-semibold text-white"
-              >
-                Login
-              </Link>
-            )}
-            {/* <NavUser isSidebar={false} /> */}
-          </div>
-        </div>
-      </header>
-
       {/* Gradient Section */}
       <div className="bg-gradient-to-b from-pink-50 to-[#5BB29D]">
         <main className="mx-auto max-w-7xl px-6 py-10">
