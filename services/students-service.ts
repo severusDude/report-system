@@ -42,46 +42,50 @@ class StudentService {
     { tags: ["students"] }
   );
 
-  async getStudentByNISN({
-    nisn,
-  }: {
-    nisn: string;
-  }): Promise<
-    ResponseData<StudentGetPayload<{ include: { parent: true } }> | null>
-  > {
-    try {
-      const result = await prisma.student.findUnique({
-        where: {
-          nisn: nisn,
-        },
-        include: {
-          parent: true,
-        },
-      });
+  getStudentByNISN = unstable_cache(
+    async ({
+      nisn,
+    }: {
+      nisn: string;
+    }): Promise<
+      ResponseData<StudentGetPayload<{ include: { parent: true } }> | null>
+    > => {
+      try {
+        const result = await prisma.student.findUnique({
+          where: {
+            nisn: nisn,
+          },
+          include: {
+            parent: true,
+          },
+        });
 
-      if (!result) {
+        if (!result) {
+          return {
+            success: false,
+            message: "Failed to fetch student: Student not found",
+            data: null,
+          };
+        }
+
+        return {
+          success: true,
+          message: "Student fetched successfully",
+          data: result,
+        };
+      } catch (error) {
+        console.log(error);
+
         return {
           success: false,
           message: "Failed to fetch student: Student not found",
           data: null,
         };
       }
-
-      return {
-        success: true,
-        message: "Student fetched successfully",
-        data: result,
-      };
-    } catch (error) {
-      console.log(error);
-
-      return {
-        success: false,
-        message: "Failed to fetch student: Student not found",
-        data: null,
-      };
-    }
-  }
+    },
+    ["students"],
+    { tags: ["students"] }
+  );
 
   async upsertStudent(
     data: z.infer<typeof StudentUpsertSchema>
