@@ -10,6 +10,11 @@ import {
 } from "lucide-react";
 
 import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { Role } from "@/generated/prisma/enums";
 import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
@@ -25,16 +30,20 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
+type NavigationItem = {
+  title: string;
+  url: string;
+  accessRole?: Role[];
+  icon?: React.ElementType;
+  items?: NavigationItem[];
+};
+
+const data: Record<string, NavigationItem[]> = {
   navMain: [
     {
       title: "School",
       url: "#",
+      accessRole: [Role.ADMIN, Role.TEACHER],
       items: [
         {
           title: "Enrollments",
@@ -68,10 +77,32 @@ const data = {
         },
       ],
     },
+    {
+      title: "Administration",
+      url: "#",
+      accessRole: [Role.ADMIN],
+      items: [
+        {
+          title: "Users",
+          url: "/admin/users",
+          icon: UserIcon,
+        },
+      ],
+    },
   ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export async function AppSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
+  const session = await auth.api.getSession({ headers: await headers() });
+
+  if (!session) {
+    redirect("/auth/login");
+  }
+
+  const user = session?.user;
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -80,28 +111,37 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </Link>
       </SidebarHeader>
       <SidebarContent>
-        {data.navMain.map((item) => (
-          <SidebarGroup key={item.title}>
-            <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {item.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <Link href={item.url}>
-                        {item.icon && <item.icon className="mr-2 size-4" />}{" "}
-                        {item.title}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+        {data.navMain.map((item) => {
+          const role = user?.role;
+
+          return (
+            role &&
+            item?.accessRole?.includes(role as string as Role) && (
+              <SidebarGroup key={item.title}>
+                <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {item?.items?.map((item) => (
+                      <SidebarMenuItem key={item.title} className={cn()}>
+                        <SidebarMenuButton asChild>
+                          <Link href={item.url}>
+                            {item.icon && <item.icon className="mr-2 size-4" />}{" "}
+                            {item.title}
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            )
+          );
+        })}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser
+          user={{ name: user.name, email: user.email, avatar: "/user.svg" }}
+        />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
