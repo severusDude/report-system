@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { auth } from "@/lib/auth";
+import { seedModel } from "@/prisma/helper";
+import { subjects, users } from "@/prisma/data";
 import { PrismaClient } from "@/generated/prisma/client";
-import { seedModel, subjects, users } from "@/prisma/helper";
 
 export async function seedDevelopment(prisma: PrismaClient) {
   console.log("Seeding development data...");

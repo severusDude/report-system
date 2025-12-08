@@ -2,7 +2,8 @@
 import "dotenv/config";
 
 import { auth } from "@/lib/auth";
-import { seedModel, subjects } from "@/prisma/helper";
+import { subjects } from "@/prisma/data";
+import { seedModel } from "@/prisma/helper";
 import { PrismaClient, Role } from "@/generated/prisma/client";
 
 export async function seedProduction(prisma: PrismaClient) {
