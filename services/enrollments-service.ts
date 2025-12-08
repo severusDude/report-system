@@ -78,36 +78,39 @@ class EnrollmentService {
       }
 
       // Step 4: Create enrollments and attendances in transaction
-      const createdEnrollments = await prisma.$transaction(async (tx) => {
-        const enrollments: Enrollment[] = [];
+      const createdEnrollments = await prisma.$transaction(
+        async (tx) => {
+          const enrollments: Enrollment[] = [];
 
-        for (const subjectItem of subjects) {
-          // Create enrollment
-          const enrollment = await tx.enrollment.create({
-            data: {
-              studentId: studentId,
-              subjectId: subjectItem.id,
-              teacherId: latestTeacher.id,
-              termId: latestTerm.id,
-              grade: "UNSET",
-            },
-          });
+          for (const subjectItem of subjects) {
+            // Create enrollment
+            const enrollment = await tx.enrollment.create({
+              data: {
+                studentId: studentId,
+                subjectId: subjectItem.id,
+                teacherId: latestTeacher.id,
+                termId: latestTerm.id,
+                grade: "UNSET",
+              },
+            });
 
-          enrollments.push(enrollment);
+            enrollments.push(enrollment);
 
-          // Create n attendances for this enrollment
-          await tx.attendance.createMany({
-            data: Array.from({ length: attendanceCount }, (_, index) => ({
-              studentId: studentId,
-              enrollmentId: enrollment.id,
-              session: index + 1,
-              type: "UNSET",
-            })),
-          });
-        }
+            // Create n attendances for this enrollment
+            await tx.attendance.createMany({
+              data: Array.from({ length: attendanceCount }, (_, index) => ({
+                studentId: studentId,
+                enrollmentId: enrollment.id,
+                session: index + 1,
+                type: "UNSET",
+              })),
+            });
+          }
 
-        return enrollments;
-      });
+          return enrollments;
+        },
+        { timeout: 30000 }
+      );
 
       return {
         success: true,
