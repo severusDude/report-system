@@ -234,18 +234,25 @@ class StudentService {
     }
   }
 
-  async getStudentEnrollment({
-    id,
-  }: {
-    id: string;
-  }): Promise<
-    ResponseData<EnrollmentGetPayload<{ include: { subject: true } }> | null>
+  async getStudentEnrollment({ nisn }: { nisn: string }): Promise<
+    ResponseData<
+      | EnrollmentGetPayload<{
+          include: { subject: true; attendances: true; teacher: true };
+        }>[]
+      | null
+    >
   > {
     try {
-      const result = await prisma.enrollment.findUnique({
-        where: { id },
-        include: {
-          subject: true,
+      const result = await prisma.student.findUnique({
+        where: { nisn },
+        select: {
+          enrollments: {
+            include: {
+              subject: true,
+              attendances: true,
+              teacher: true,
+            },
+          },
         },
       });
 
@@ -260,7 +267,7 @@ class StudentService {
       return {
         success: true,
         message: "Student enrollment fetched successfully",
-        data: result,
+        data: result.enrollments,
       };
     } catch (error) {
       console.log(error);
