@@ -1,8 +1,23 @@
 "use server";
 
-import { Role, User } from "@/generated/prisma/client";
-import userService from "@/services/users-service";
 import { ResponseData } from "@/types";
+import { updateTag } from "next/cache";
+import userService from "@/services/users-service";
+import { Role, User } from "@/generated/prisma/client";
+
+export async function deleteUser(id: string) {
+  try {
+    const result = await userService.deleteUser(id);
+
+    if (!result) {
+      throw new Error("Failed to delete user");
+    }
+
+    updateTag("terms");
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 export async function searchParents({
   query = "",
