@@ -4,12 +4,16 @@ import { notFound } from "next/navigation";
 import { getImageProps } from "next/image";
 import { NISN_LENGTH } from "@/schemas/student";
 import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/ui/data-table";
 import studentService from "@/services/students-service";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DataTable } from "@/components/ui/data-table";
-import { columns, EnrollmentTableData } from "./columns";
 import { AttendanceType } from "@/generated/prisma/enums";
+import enrollmentService from "@/services/enrollments-service";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+import { columns, EnrollmentTableData } from "./columns";
+import { updateTag } from "next/cache";
+import { ActionButton } from "@/components/action-button";
 
 export default async function Page({
   params,
@@ -43,6 +47,18 @@ export default async function Page({
     height: 40,
   });
 
+  async function initEnrollments() {
+    "use server";
+
+    await enrollmentService.createEnrollment({
+      studentId: student.id,
+      subject: true,
+      attendanceCount: 16,
+    });
+
+    updateTag("enrollments");
+  }
+
   // Transform data for the table
   const tableData: EnrollmentTableData[] =
     enrollmentResult.data?.map((enrollment, index) => {
@@ -68,8 +84,6 @@ export default async function Page({
         grade: enrollment.grade,
       };
     }) ?? [];
-
-  console.log(enrollmentResult);
 
   return (
     <div className="max-w-screen w-screen p-8 overflow-x-hidden">
@@ -186,7 +200,8 @@ export default async function Page({
             </CardContent>
           </Card>
         </div>
-        <div className="flex w-[50vw] flex-1">
+        <div className="flex w-[80vw] flex-1">
+          <ActionButton action={initEnrollments} />
           <DataTable columns={columns} data={tableData} />
         </div>
       </div>
