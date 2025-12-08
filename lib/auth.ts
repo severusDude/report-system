@@ -1,10 +1,11 @@
-import { betterAuth } from "better-auth";
+import "dotenv/config";
 
+import { APIError, betterAuth } from "better-auth";
+
+import { prisma } from "@/lib/prisma";
 import { Role } from "@/generated/prisma/enums";
 import { nextCookies } from "better-auth/next-js";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-
-import { prisma } from "../lib/prisma";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -23,11 +24,23 @@ export const auth = betterAuth({
     additionalFields: {
       role: {
         type: "string",
-        required: true,
+        input: true,
         defaultValue: Role.PARENT,
-        input: false,
+      },
+    },
+    deleteUser: {
+      enabled: true,
+      beforeDelete: async (user) => {
+        if (user.email === process.env.ADMIN_EMAIL) {
+          throw new APIError("BAD_REQUEST", {
+            message: "Cannot delete admin user",
+          });
+        }
       },
     },
   },
   plugins: [nextCookies()],
 });
+
+export type Session = typeof auth.$Infer.Session;
+export type User = typeof auth.$Infer.Session.user;

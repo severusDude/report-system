@@ -10,6 +10,8 @@ import {
   StudentGetPayload,
 } from "@/generated/prisma/models";
 
+import enrollmentService from "./enrollments-service";
+
 class StudentService {
   getStudents = unstable_cache(
     async ({
@@ -42,46 +44,50 @@ class StudentService {
     { tags: ["students"] }
   );
 
-  async getStudentByNISN({
-    nisn,
-  }: {
-    nisn: string;
-  }): Promise<
-    ResponseData<StudentGetPayload<{ include: { parent: true } }> | null>
-  > {
-    try {
-      const result = await prisma.student.findUnique({
-        where: {
-          nisn: nisn,
-        },
-        include: {
-          parent: true,
-        },
-      });
+  getStudentByNISN = unstable_cache(
+    async ({
+      nisn,
+    }: {
+      nisn: string;
+    }): Promise<
+      ResponseData<StudentGetPayload<{ include: { parent: true } }> | null>
+    > => {
+      try {
+        const result = await prisma.student.findUnique({
+          where: {
+            nisn: nisn,
+          },
+          include: {
+            parent: true,
+          },
+        });
 
-      if (!result) {
+        if (!result) {
+          return {
+            success: false,
+            message: "Failed to fetch student: Student not found",
+            data: null,
+          };
+        }
+
+        return {
+          success: true,
+          message: "Student fetched successfully",
+          data: result,
+        };
+      } catch (error) {
+        console.log(error);
+
         return {
           success: false,
           message: "Failed to fetch student: Student not found",
           data: null,
         };
       }
-
-      return {
-        success: true,
-        message: "Student fetched successfully",
-        data: result,
-      };
-    } catch (error) {
-      console.log(error);
-
-      return {
-        success: false,
-        message: "Failed to fetch student: Student not found",
-        data: null,
-      };
-    }
-  }
+    },
+    ["students"],
+    { tags: ["students"] }
+  );
 
   async upsertStudent(
     data: z.infer<typeof StudentUpsertSchema>
@@ -136,6 +142,16 @@ class StudentService {
             },
           } as Prisma.StudentCreateInput,
         });
+
+        const enrollments = await enrollmentService.createEnrollment({
+          studentId: result.id,
+          subject: true,
+          attendanceCount: 16,
+        });
+
+        if (!enrollments.success) {
+          console.warn("Server Error: Failed to create student enrollments");
+        }
       } catch (error) {
         console.log(error);
 
@@ -218,18 +234,25 @@ class StudentService {
     }
   }
 
-  async getStudentEnrollment({
-    id,
-  }: {
-    id: string;
-  }): Promise<
-    ResponseData<EnrollmentGetPayload<{ include: { subject: true } }> | null>
+  async getStudentEnrollment({ nisn }: { nisn: string }): Promise<
+    ResponseData<
+      | EnrollmentGetPayload<{
+          include: { subject: true; attendances: true; teacher: true };
+        }>[]
+      | null
+    >
   > {
     try {
-      const result = await prisma.enrollment.findUnique({
-        where: { id },
-        include: {
-          subject: true,
+      const result = await prisma.student.findUnique({
+        where: { nisn },
+        select: {
+          enrollments: {
+            include: {
+              subject: true,
+              attendances: true,
+              teacher: true,
+            },
+          },
         },
       });
 
@@ -244,7 +267,7 @@ class StudentService {
       return {
         success: true,
         message: "Student enrollment fetched successfully",
-        data: result,
+        data: result.enrollments,
       };
     } catch (error) {
       console.log(error);

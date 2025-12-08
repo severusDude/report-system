@@ -7,9 +7,9 @@ import { toast } from "sonner";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { ResponseData } from "@/types";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { signIn } from "@/services/auth-service";
@@ -20,14 +20,21 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { useRouter } from "next/navigation";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import { authClient } from "@/lib/auth-client";
 
 const formSchema = z.object({
   email: z.email().min(1, "Email is required"),
   password: z.string().min(1, "Password is required"),
 });
 
-function LoginForm({ className, ...props }: React.ComponentProps<"form">) {
+function SignInForm({ className, ...props }: React.ComponentProps<"form">) {
+  const { refetch } = authClient.useSession();
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -55,7 +62,8 @@ function LoginForm({ className, ...props }: React.ComponentProps<"form">) {
         throw new Error(result.message || "Failed to login");
       }
 
-      router.push("/admin");
+      router.push("/");
+      refetch();
     } catch (error) {
       console.error("Failed to login: ", error);
 
@@ -72,18 +80,16 @@ function LoginForm({ className, ...props }: React.ComponentProps<"form">) {
 
   return (
     <form
-      className={cn("flex flex-col gap-4", className)}
+      className={cn("flex flex-col gap-2", className)}
       onSubmit={form.handleSubmit(onSubmit)}
       {...props}
     >
       <FieldGroup>
         {/* Title */}
         <div className="flex flex-col items-center justify-center gap-2">
-          <h1 className="text-2xl font-bold text-primary">
-            Create your account
-          </h1>
+          <h1 className="text-2xl font-bold text-primary">Welcome back</h1>
           <p className="text-sm text-center text-muted-foreground">
-            Fill in the form below to create your account
+            Enter your email and password
           </p>
         </div>
 
@@ -113,34 +119,30 @@ function LoginForm({ className, ...props }: React.ComponentProps<"form">) {
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="form-password">Password</FieldLabel>
-              <div className="relative">
-                <Input
+              <InputGroup>
+                <InputGroupInput
                   {...field}
                   id="form-password"
                   type={showPassword ? "text" : "password"}
-                  autoComplete="new-password"
                   aria-invalid={fieldState.invalid}
                 />
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute top-0 right-0 px-3 bg-transparent"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
+                <InputGroupAddon align="inline-end">
+                  <InputGroupButton
+                    type="button"
+                    size="icon-sm"
+                    variant="ghost"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff /> : <Eye />}
+                  </InputGroupButton>
+                </InputGroupAddon>
+              </InputGroup>
             </Field>
           )}
         />
 
         {/* Actions */}
-        <div className="flex flex-col justify-center w-full gap-2 mt-2">
+        <div className="flex flex-col justify-center w-full gap-2">
           <Button type="submit" disabled={isSubmitting}>
             <Activity mode={isSubmitting ? "visible" : "hidden"}>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -148,7 +150,7 @@ function LoginForm({ className, ...props }: React.ComponentProps<"form">) {
             {isSubmitting ? "Loading..." : "Login"}
           </Button>
 
-          <p className="mt-4 text-sm text-center text-muted-foreground">
+          {/* <p className="mt-4 text-sm text-center text-muted-foreground">
             Don&apos;t have an account?{" "}
             <Link
               href="/auth/register"
@@ -156,11 +158,11 @@ function LoginForm({ className, ...props }: React.ComponentProps<"form">) {
             >
               Register
             </Link>
-          </p>
+          </p> */}
         </div>
       </FieldGroup>
     </form>
   );
 }
 
-export default LoginForm;
+export default SignInForm;
