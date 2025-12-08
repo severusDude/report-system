@@ -1,5 +1,8 @@
 import { Role, SubjectType } from "@/generated/prisma/enums";
-import { SubjectCreateManyInput } from "@/generated/prisma/models";
+import {
+  SubjectCreateManyInput,
+  TermCreateManyInput,
+} from "@/generated/prisma/models";
 
 export const users = [
   {
@@ -19,6 +22,39 @@ export const users = [
     name: "parent",
     password: "parent123",
     role: Role.PARENT,
+  },
+];
+
+export const terms: TermCreateManyInput[] = [
+  {
+    name: "Semester 1",
+    startDate: new Date("2026-01-01"),
+    endDate: new Date("2026-06-30"),
+  },
+  {
+    name: "Semester 2",
+    startDate: new Date("2026-07-01"),
+    endDate: new Date("2026-12-31"),
+  },
+  {
+    name: "Semester 3",
+    startDate: new Date("2027-01-01"),
+    endDate: new Date("2027-06-30"),
+  },
+  {
+    name: "Semester 4",
+    startDate: new Date("2027-07-01"),
+    endDate: new Date("2027-12-31"),
+  },
+  {
+    name: "Semester 5",
+    startDate: new Date("2028-01-01"),
+    endDate: new Date("2028-06-30"),
+  },
+  {
+    name: "Semester 6",
+    startDate: new Date("2028-07-01"),
+    endDate: new Date("2028-12-31"),
   },
 ];
 
