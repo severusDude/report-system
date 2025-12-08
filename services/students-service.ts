@@ -10,6 +10,8 @@ import {
   StudentGetPayload,
 } from "@/generated/prisma/models";
 
+import enrollmentService from "./enrollments-service";
+
 class StudentService {
   getStudents = unstable_cache(
     async ({
@@ -140,6 +142,16 @@ class StudentService {
             },
           } as Prisma.StudentCreateInput,
         });
+
+        const enrollments = await enrollmentService.createEnrollment({
+          studentId: result.id,
+          subject: true,
+          attendanceCount: 16,
+        });
+
+        if (!enrollments.success) {
+          console.warn("Server Error: Failed to create student enrollments");
+        }
       } catch (error) {
         console.log(error);
 
